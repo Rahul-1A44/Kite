@@ -133,7 +133,7 @@ CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 
 # ✅ KHALTI PAYMENT CONFIGURATION (SANDBOX)
-KHALTI_SECRET_KEY = "Key 05bf95cc57244045b8df5fad06748dab"  # Sandbox Secret Key
+KHALTI_SECRET_KEY = config("KHALTI_SECRET_KEY", default="")  # Sandbox Secret Key
 KHALTI_INITIATE_URL = "https://dev.khalti.com/api/v2/epayment/initiate/"
 KHALTI_LOOKUP_URL = "https://dev.khalti.com/api/v2/epayment/lookup/"
 # This is where Khalti sends the user back after payment (Must match your urls.py)
@@ -144,7 +144,7 @@ KHALTI_RETURN_URL = "http://127.0.0.1:8000/org/payment/verify/"
 SITE_URL = "http://127.0.0.1:8000"
 
 # ✅ GOOGLE GEMINI AI CONFIGURATION
-GEMINI_API_KEY = config("GEMINI_API_KEY", default="AIzaSyCwdf6e0cXWmqxZoNAtSnBRlGCMToDg_ko")
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
 
 # =======================================================
 # ✅ CRITICAL FIX: CSRF TRUSTED ORIGINS
