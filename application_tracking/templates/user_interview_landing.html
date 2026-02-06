@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Application Status - {{ application.job_advert.title }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-5xl mx-auto px-6 py-10">
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight uppercase">
+                Application Status
+            </h1>
+            <p class="text-slate-500 mt-2 text-sm">
+                Status tracking for your application to <span class="font-semibold text-slate-700">{{
+                    application.job_advert.company_name }}</span>.
+            </p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-5xl mx-auto px-6 py-10">
+
+        <div class="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+
+            <!-- Top Banner Status -->
+            <div class="p-8 text-center border-b border-gray-100 
+                {% if application.status == 'REJECTED' %}bg-red-50
+                {% elif application.status == 'HIRED' or application.status == 'ACCEPTED' %}bg-green-50
+                {% else %}bg-blue-50{% endif %}">
+
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4
+                    {% if application.status == 'REJECTED' %}bg-red-100 text-red-600
+                    {% elif application.status == 'HIRED' or application.status == 'ACCEPTED' %}bg-green-100 text-green-600
+                    {% else %}bg-blue-100 text-blue-600{% endif %}">
+                    {% if application.status == 'REJECTED' %}
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                    {% elif application.status == 'HIRED' or application.status == 'ACCEPTED' %}
+                    <i class="fa-solid fa-check text-2xl"></i>
+                    {% else %}
+                    <i class="fa-solid fa-spinner text-2xl animate-spin-slow"></i>
+                    {% endif %}
+                </div>
+
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">
+                    {{ application.get_status_display }}
+                </h2>
+                <p class="text-slate-500 max-w-lg mx-auto">
+                    {% if application.status == 'REJECTED' %}
+                    Thank you for your interest. Unfortunately, we definitely have moved forward with other candidates
+                    for this position.
+                    {% elif application.status == 'HIRED' or application.status == 'ACCEPTED' %}
+                    Congratulations! You have been selected for this position. Our HR team will contact you shortly.
+                    {% else %}
+                    Your application is currently being reviewed. Please check back later for updates or new tasks.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Details Section -->
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <!-- Job Details -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Job Details</h3>
+
+                    <div class="flex items-start gap-4 mb-4">
+                        <div
+                            class="w-10 h-10 bg-slate-100 text-slate-600 rounded flex items-center justify-center font-bold uppercase shrink-0">
+                            {{ application.job_advert.company_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900">{{ application.job_advert.title }}</h4>
+                            <p class="text-sm text-slate-500">{{ application.job_advert.company_name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-sm text-slate-600">
+                        <div class="flex justify-between border-b border-gray-50 pb-2">
+                            <span>Reference</span>
+                            <span class="font-mono text-slate-400">#{{ application.id|stringformat:"04d" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-50 pb-2">
+                            <span>Applied On</span>
+                            <span class="font-medium">{{ application.created_at|date:"M j, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interview Status -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Interview Progress</h3>
+
+                    <div class="relative pl-6 border-l-2 border-gray-100 space-y-6">
+
+                        <!-- HR Round -->
+                        <div class="relative">
+                            <div class="absolute -left-[31px] w-6 h-6 rounded-full border-2 border-white 
+                                {% if application.interview_stage == 'HR_ROUND' or application.interview_stage == 'TECH_ROUND' or application.interview_stage == 'FINAL_ROUND' or application.interview_stage == 'HIRED' %}bg-blue-500
+                                {% else %}bg-gray-200{% endif %}"></div>
+                            <h4 class="font-bold text-slate-900 text-sm">HR Screening</h4>
+                            <p class="text-xs text-slate-500">Initial assessment of cultural fit.</p>
+                        </div>
+
+                        <!-- Tech Round -->
+                        <div class="relative">
+                            <div class="absolute -left-[31px] w-6 h-6 rounded-full border-2 border-white 
+                                {% if application.interview_stage == 'TECH_ROUND' or application.interview_stage == 'FINAL_ROUND' or application.interview_stage == 'HIRED' %}bg-blue-500
+                                {% else %}bg-gray-200{% endif %}"></div>
+                            <h4 class="font-bold text-slate-900 text-sm">Technical Challenge</h4>
+                            <p class="text-xs text-slate-500">Skill-based assessment task.</p>
+                        </div>
+
+                        <!-- Final Round -->
+                        <div class="relative">
+                            <div class="absolute -left-[31px] w-6 h-6 rounded-full border-2 border-white 
+                                {% if application.interview_stage == 'FINAL_ROUND' or application.interview_stage == 'HIRED' %}bg-blue-500
+                                {% else %}bg-gray-200{% endif %}"></div>
+                            <h4 class="font-bold text-slate-900 text-sm">Final Interview</h4>
+                            <p class="text-xs text-slate-500">AI-driven chat interview.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Action -->
+            <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 flex justify-between items-center">
+                <a href="{% url 'user_interviews' %}"
+                    class="text-slate-500 hover:text-slate-900 text-sm font-medium transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back to My Applications
+                </a>
+
+                {% if application.status == 'APPLIED' or application.status == 'PENDING' %}
+                <span class="text-xs text-slate-400 italic">Waiting for reviewer action...</span>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,64 +1,198 @@
 {% extends 'base.html' %}
-
 {% load humanize %}
+{% load static %}
 
-{% block title %} Job Portal |  {% endblock %}
+{% block title %}Kite - Professional Recruitment Solution{% endblock %}
 
 {% block content %}
 
-{% include 'header.html' %}
-
-<div class="search-container">
-    <form action="{% url 'search' %}" method="GET" class="search-box">
-        <input type="text" name="keyword" placeholder="title, company, description, skills">
-        <input type="text" name="location" placeholder="location">
-        <button type="submit">Search</button>
-    </form>
-</div>
-
-<section class="job-list">
-   
-        {% for advert in job_adverts %}
-            <div class="job-card">
-                <h3>{{advert.title}}</h3>
-                <p><strong>Company:</strong> {{advert.company_name}}</p>
-                <p><strong>Type:</strong> {{advert.job_type}}</p>
-                <p><strong>Posted:</strong> {{advert.created_at | naturalday | title}}</p>
-                <p><strong>Skills:</strong>{{advert.skills|truncatechars:14}}</p>
-                <a class="small-btn"  href="{% url 'job_advert' advert.id %}">View Details</a>
-
-            </div>
-
-        {% empty %}
-            <div>
-                <p>No adverts available</p>
+<!-- HERO SECTION -->
+<div class="relative bg-slate-900 text-white overflow-hidden">
+    <!-- Abstract Geometric Background -->
+    <div class="absolute inset-0 opacity-10">
+        <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
+        </svg>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-6 md:px-12 py-24 md:py-32 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+        
+        <!-- Hero Content -->
+        <div class="space-y-8">
+            <div class="inline-flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 text-blue-300 px-4 py-1.5 rounded-sm text-xs font-bold tracking-widest uppercase">
+                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                The Standard in Recruitment
             </div>
             
-        {% endfor %}
-</section>
+            <h1 class="text-5xl md:text-7xl font-bold leading-tight tracking-tight text-white">
+                Precision Hiring <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-200">For The Future.</span>
+            </h1>
+            
+            <p class="text-lg text-slate-400 max-w-xl leading-relaxed font-light">
+                Connect with elite organizations and discover opportunities that match your precise skill set. 
+                Powered by advanced AI matching technology.
+            </p>
 
-<section>
-    <div class="pagination">
-        <div class="step-links">
-            {% if job_adverts.has_previous %}
-                <a class="pagination-link" href="?page={{ job_adverts.previous_page_number }}{% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">« Previous</a>
-            {% else %}
-                <span class="pagination-disabled">« Previous</span>
-            {% endif %}
-    
-            <span class="pagination-current">
-                Page {{ job_adverts.number }} of {{ job_adverts.paginator.num_pages }}
-            </span>
-    
-            {% if job_adverts.has_next %}
-                <a class="pagination-link" href="?page={{ job_adverts.next_page_number }}{% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">Next »</a>
-            {% else %}
-                <span class="pagination-disabled">Next »</span>
-            {% endif %}
+            <!-- Search Interface -->
+            <div class="bg-white p-1.5 rounded-sm shadow-xl flex flex-col md:flex-row max-w-2xl">
+                <div class="flex-1 flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-100">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 mr-3"></i>
+                    <input type="text" name="keyword" placeholder="Job title, skill, or company" class="w-full outline-none text-slate-800 placeholder-slate-400 font-medium h-full">
+                </div>
+                <div class="flex-1 flex items-center px-4 py-3">
+                    <i class="fa-solid fa-location-dot text-slate-400 mr-3"></i>
+                    <input type="text" name="location" placeholder="Location or Remote" class="w-full outline-none text-slate-800 placeholder-slate-400 font-medium h-full">
+                </div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 font-bold uppercase text-sm tracking-wide transition rounded-sm">
+                    Search Jobs
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-500 font-medium">
+                Popular: <span class="text-slate-300">Software Engineer, Product Manager, Data Scientist</span>
+            </p>
+        </div>
+
+        <!-- Hero Image / Visual -->
+        <div class="relative hidden lg:block">
+            <div class="absolute -inset-4 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-30 blur-2xl rounded-sm transform rotate-3"></div>
+            <div class="relative bg-slate-800 border border-slate-700 p-2 rounded-sm shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                     alt="Corporate Meeting" 
+                     class="w-full h-auto rounded-sm grayscale hover:grayscale-0 transition duration-700 ease-in-out">
+                
+                <!-- Floating Stats Card -->
+                <div class="absolute -bottom-8 -left-8 bg-white p-6 shadow-2xl border-l-4 border-blue-600 rounded-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-blue-50 p-3 rounded-full text-blue-600">
+                            <i class="fa-solid fa-users text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-slate-900">10k+</p>
+                            <p class="text-xs text-slate-500 uppercase tracking-wider font-bold">Active Candidates</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</section>
+</div>
 
+<!-- TRUST / STATS STRIP -->
+<div class="bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-gray-100">
+            <div>
+                <h3 class="text-3xl font-bold text-slate-900">500+</h3>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Global Companies</p>
+            </div>
+            <div>
+                <h3 class="text-3xl font-bold text-slate-900">12k</h3>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Skills Verified</p>
+            </div>
+            <div>
+                <h3 class="text-3xl font-bold text-slate-900">98%</h3>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Match Accuracy</p>
+            </div>
+            <div>
+                <h3 class="text-3xl font-bold text-slate-900">24h</h3>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Avg. Response Time</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LATEST JOBS SECTION -->
+<div class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-6">
+        
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Latest Opportunities</h2>
+                <p class="text-slate-500 mt-2 max-w-2xl">Curated positions from industry-leading organizations.</p>
+            </div>
+            <a href="{% url 'search' %}" class="text-blue-600 font-bold hover:text-blue-800 transition flex items-center gap-2 mt-4 md:mt-0">
+                View All Jobs <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for job in jobs %}
+                <div class="bg-white border border-gray-200 p-6 rounded-sm hover:border-blue-400 hover:shadow-lg transition duration-200 group flex flex-col h-full">
+                    
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-lg border border-slate-200 rounded-sm">
+                            {{ job.organization.name|slice:":1" }}
+                        </div>
+                        <span class="text-xs font-bold px-2 py-1 bg-green-50 text-green-700 border border-green-100 rounded-sm">
+                            {{ job.job_type|default:"FULL TIME" }}
+                        </span>
+                    </div>
+
+                    <h3 class="font-bold text-lg text-slate-900 mb-1 group-hover:text-blue-600 transition">{{ job.title }}</h3>
+                    <p class="text-sm text-slate-500 font-medium mb-4 flex items-center gap-2">
+                        <i class="fa-regular fa-building text-slate-400"></i> {{ job.organization.name }}
+                    </p>
+
+                    <div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-sm text-slate-500">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-slate-400"></i> {{ job.location|default:"Remote" }}
+                        </span>
+                        <span>{{ job.posted_at|naturalday }}</span>
+                    </div>
+                    
+                    <a href="{% url 'job_detail' job.id %}" class="mt-4 block text-center bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-sm border border-slate-200 transition text-sm">
+                        Apply Now
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-span-full text-center py-12 bg-white border border-dashed border-gray-300 rounded-sm">
+                    <p class="text-slate-500">No active job listings at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+<!-- VALUE PROPOSITION -->
+<div class="bg-slate-900 text-white py-24 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl font-bold mb-4">Why Industry Leaders Choose Kite</h2>
+            <p class="text-slate-400">Streamlining the recruitment lifecycle with enterprise-grade tools and intelligence.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-12">
+            <!-- Feature 1 -->
+            <div class="bg-slate-800 p-8 border border-slate-700 rounded-sm hover:border-blue-500 transition duration-300">
+                <div class="w-14 h-14 bg-blue-600/10 text-blue-500 flex items-center justify-center text-2xl mb-6 rounded-sm border border-blue-500/20">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">AI-Driven Matching</h3>
+                <p class="text-slate-400 leading-relaxed text-sm">Our proprietary algorithms analyze technical skills and experience to ensure precise candidate alignment.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-slate-800 p-8 border border-slate-700 rounded-sm hover:border-blue-500 transition duration-300">
+                <div class="w-14 h-14 bg-blue-600/10 text-blue-500 flex items-center justify-center text-2xl mb-6 rounded-sm border border-blue-500/20">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Verified Talent Pool</h3>
+                <p class="text-slate-400 leading-relaxed text-sm">Rigorous vetting processes mean you only interact with qualified, serious professionals.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-slate-800 p-8 border border-slate-700 rounded-sm hover:border-blue-500 transition duration-300">
+                <div class="w-14 h-14 bg-blue-600/10 text-blue-500 flex items-center justify-center text-2xl mb-6 rounded-sm border border-blue-500/20">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Analytics Dashboard</h3>
+                <p class="text-slate-400 leading-relaxed text-sm">Gain actionable insights into your hiring pipeline with our component-based reporting tools.</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
-

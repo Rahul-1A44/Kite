@@ -5,15 +5,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <title>EazyJobs Portal - {% block title %}{% endblock %}</title>
+    <title>{% block title %}Kite - Recruitment{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/custom_forms.css' %}?v=2">
+
+    <style>
+        /* Force Dropdowns to float and hide by default */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding-top: 10px;
+            z-index: 9999;
+            min-width: 220px;
+        }
+
+        .dropdown-parent:hover .dropdown-content {
+            display: block;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        .dropdown-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        body {
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
 
-<body>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+    {% block navbar %}
+    <nav
+        class="bg-white/95 backdrop-blur-sm py-3 px-6 md:px-8 flex justify-between items-center sticky top-0 z-50 shadow-sm border-b border-gray-100">
+
+        <div class="flex items-center w-48">
+            <a href="{% url 'home' %}"
+                class="flex items-center gap-3 text-xl font-bold text-slate-900 hover:text-blue-700 transition tracking-tight">
+                <div
+                    class="w-8 h-8 bg-blue-700 rounded-sm flex items-center justify-center text-white text-xs shadow-md">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+                <span>KITE</span>
+            </a>
+        </div>
+
+        <div class="hidden md:flex flex-1 justify-center items-center space-x-8 text-gray-500 font-medium text-sm h-16">
+            <a href="{% url 'home' %}"
+                class="hover:text-blue-600 transition flex items-center gap-2 h-full px-2 border-b-2 border-transparent hover:border-blue-600">
+                <i class="fa-solid fa-house"></i> Home
+            </a>
+
+            <div
+                class="relative dropdown-parent h-full flex items-center px-2 cursor-pointer border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600">
+                <button class="flex items-center gap-1 focus:outline-none font-semibold">
+                    Jobs <i class="fa-solid fa-chevron-down text-[10px] ml-1 opacity-75"></i>
+                </button>
+
+                <div class="dropdown-content">
+                    <div class="dropdown-box">
+                        <div class="flex flex-col py-2 text-left">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'create_advert' %}"
+                                class="px-5 py-3 hover:bg-blue-50 text-gray-600 hover:text-blue-600 text-sm flex items-center gap-3 border-b border-gray-50 transition">
+                                <i class="fa-solid fa-circle-plus text-blue-500"></i> Create Job
+                            </a>
+                            <a href="{% url 'my_jobs' %}"
+                                class="px-5 py-3 hover:bg-blue-50 text-gray-600 hover:text-blue-600 text-sm flex items-center gap-3 transition">
+                                <i class="fa-solid fa-briefcase text-blue-500"></i> Posted Jobs
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'my_applications' %}"
+                                class="px-5 py-3 hover:bg-blue-50 text-gray-600 hover:text-blue-600 text-sm flex items-center gap-3 border-t border-gray-50 transition">
+                                <i class="fa-solid fa-magnifying-glass text-blue-500"></i> My Applications
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{% url 'jobs_apply' %}"
+                class="hover:text-blue-600 transition flex items-center gap-2 h-full px-2 border-b-2 border-transparent hover:border-blue-600">
+                Apply
+            </a>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'user_interviews' %}"
+                class="hover:text-blue-600 transition flex items-center gap-2 h-full px-2 border-b-2 border-transparent hover:border-blue-600">
+                <i class="fa-solid fa-video"></i> Interviews
+            </a>
+            {% endif %}
+
+            <a href="{% url 'sources_page' %}"
+                class="hover:text-blue-600 transition flex items-center gap-2 h-full px-2 border-b-2 border-transparent hover:border-blue-600">
+                <i class="fa-solid fa-book-open"></i> Sources
+            </a>
+        </div>
+
+        <div class="flex items-center justify-end gap-5 w-48 h-16">
+            {% if user.is_authenticated %}
+
+            <a href="{% url 'notifications' %}" class="relative p-2 text-gray-400 hover:text-blue-600 transition group">
+                <i class="fa-regular fa-bell text-xl"></i>
+
+                {% if unread_notifications_count > 0 %}
+                <span
+                    class="nav-notification-badge absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-pulse">
+                    {{ unread_notifications_count }}
+                </span>
+                {% endif %}
+            </a>
+
+            <div class="relative">
+                <button id="profile-menu-btn" onclick="toggleProfileMenu()"
+                    class="flex items-center gap-3 hover:text-blue-600 transition focus:outline-none group">
+                    <div
+                        class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 overflow-hidden border border-gray-200 group-hover:border-blue-300 transition">
+                        {% if user.userprofile.profile_picture %}
+                        <img src="{{ user.userprofile.profile_picture.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <i class="fa-solid fa-user"></i>
+                        {% endif %}
+                    </div>
+                </button>
+
+                <div id="profile-dropdown-menu"
+                    class="hidden absolute right-0 top-14 w-60 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+                    <div class="px-5 py-4 bg-gray-50 border-b border-gray-100">
+                        <p class="text-sm font-bold text-gray-900 truncate">
+                            {% if user.first_name %}{{user.first_name}} {{user.last_name}}{% else
+                            %}{{user.email|slice:":10"}}...{% endif %}
+                        </p>
+                        <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+                    </div>
+                    <div class="py-2">
+                        <a href="{% url 'user_profile' %}"
+                            class="px-5 py-3 hover:bg-blue-50 text-gray-700 text-sm flex items-center gap-3 transition">
+                            <i class="fa-solid fa-id-card text-gray-400"></i> My Profile
+                        </a>
+
+                        {% if user.organization_owned %}
+                        <a href="{% url 'org_dashboard' %}"
+                            class="px-5 py-3 hover:bg-purple-50 text-gray-700 text-sm flex items-center gap-3 transition">
+                            <i class="fa-solid fa-building text-purple-500"></i> Organization Dashboard
+                        </a>
+                        {% endif %}
+
+                        <div class="border-t border-gray-100 my-1"></div>
+
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="w-full text-left px-5 py-3 hover:bg-red-50 text-gray-700 text-sm flex items-center gap-3 transition group">
+                                <i
+                                    class="fa-solid fa-arrow-right-from-bracket text-gray-400 group-hover:text-red-500"></i>
+                                <span class="group-hover:text-red-600">Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <a href="{% url 'login' %}" class="text-gray-600 font-semibold text-sm hover:text-blue-600">Login</a>
+            <a href="{% url 'register' %}"
+                class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow-md shadow-blue-500/20">Sign
+                Up</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endblock %}
+
+    <div id="toast-container" class="fixed top-24 right-6 z-[100] flex flex-col gap-3">
+        {% if messages %}
+        {% for message in messages %}
+        <div
+            class="toast-notification bg-white border-l-4 {% if message.tags == 'error' %}border-red-500{% else %}border-green-500{% endif %} px-6 py-4 rounded-lg shadow-xl flex items-center gap-4 min-w-[300px] animate-slide-in">
+            <div
+                class="{% if message.tags == 'error' %}bg-red-100 text-red-600{% else %}bg-green-100 text-green-600{% endif %} rounded-full p-2">
+                <i
+                    class="fa-solid {% if message.tags == 'error' %}fa-triangle-exclamation{% else %}fa-check{% endif %}"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm uppercase">{{ message.tags }}</h4>
+                <p class="text-sm text-gray-600">{{ message }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="ml-auto text-gray-400 hover:text-gray-600"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <main class="flex-grow">
         {% block content %}
         {% endblock %}
-    <script src="{% static 'main.js' %}"></script>
+    </main>
+
+    <footer class="bg-slate-900 text-white py-16 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12">
+            <div class="col-span-1 md:col-span-2">
+                <a href="#" class="text-2xl font-bold flex items-center gap-2 mb-6 tracking-tight">
+                    <div class="w-8 h-8 bg-blue-600 rounded-sm flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-paper-plane text-white"></i>
+                    </div>
+                    KITE <span
+                        class="text-slate-600 ml-2 text-sm font-normal uppercase tracking-widest border-l border-slate-700 pl-2">Enterprise</span>
+                </a>
+                <p class="text-slate-400 text-sm leading-relaxed max-w-sm">
+                    Empowering organizations with next-generation recruitment intelligence.
+                    Merging human expertise with AI precision.
+                </p>
+
+                <div class="flex gap-4 mt-8">
+                    <a href="#"
+                        class="w-10 h-10 bg-slate-800 flex items-center justify-center rounded-sm hover:bg-blue-600 transition text-slate-400 hover:text-white"><i
+                            class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#"
+                        class="w-10 h-10 bg-slate-800 flex items-center justify-center rounded-sm hover:bg-blue-600 transition text-slate-400 hover:text-white"><i
+                            class="fa-brands fa-twitter"></i></a>
+                    <a href="#"
+                        class="w-10 h-10 bg-slate-800 flex items-center justify-center rounded-sm hover:bg-blue-600 transition text-slate-400 hover:text-white"><i
+                            class="fa-brands fa-github"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-6">Platform</h4>
+                <ul class="space-y-3 text-slate-400 text-sm">
+                    <li><a href="#" class="hover:text-white transition">Browse Jobs</a></li>
+                    <li><a href="#" class="hover:text-white transition">Companies</a></li>
+                    <li><a href="#" class="hover:text-white transition">Salaries</a></li>
+                    <li><a href="#" class="hover:text-white transition">API Access</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-6">Legal</h4>
+                <ul class="space-y-3 text-slate-400 text-sm">
+                    <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+                    <li><a href="#" class="hover:text-white transition">Security</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}?v=2"></script>
+    <script>
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-dropdown-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        window.onclick = function (event) {
+            if (!event.target.closest('#profile-menu-btn')) {
+                const menu = document.getElementById('profile-dropdown-menu');
+                if (menu && !menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                }
+            }
+        }
+
+        setTimeout(function () {
+            const toasts = document.querySelectorAll('.toast-notification');
+            toasts.forEach(t => t.remove());
+        }, 4000);
+    </script>
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

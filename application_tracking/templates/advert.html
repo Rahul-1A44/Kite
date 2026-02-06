@@ -1,33 +1,324 @@
 {% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
 
-{% block title %} {{ job_advert.title }} - Job Details {% endblock %}
+{% block title %}{{ job_advert.title }} - Kite{% endblock %}
 
 {% block content %}
 
-{% include 'header.html' %}
-<section class="detail-page">
-  <div class="detail-container">
-    <div class="job-detail">
-      <h2>{{ job_advert.title }}</h2>
-      <p><strong>Company:</strong> {{ job_advert.company_name }}</p>
-      <p><strong>Employment Type:</strong> {{ job_advert.job_type }}</p>
-      <p><strong>Location:</strong> {{ job_advert.location }}</p>
-      <p><strong>Experience Level:</strong> {{ job_advert.experience_level }}</p>
-      <p><strong>Skills:</strong> {{ job_advert.skills }}</p>
-      <p><strong>Description:</strong></p>
-      <p>{{ job_advert.description }}</p>
-      <p><strong>Application Deadline:</strong> {{ job_advert.deadline }}</p>
-      <p><strong>Posted:</strong> {{ job_advert.created_at | timesince }}</p>
-    </div>
-    <div class="application-form">
+<style>
+    /* --- PROFESSIONAL FORM STYLING --- */
+    .pro-form label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    .pro-form input[type="text"],
+    .pro-form input[type="email"],
+    .pro-form input[type="url"],
+    .pro-form input[type="number"],
+    .pro-form textarea,
+    .pro-form select {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        font-size: 0.925rem;
+        color: #111827;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .pro-form input:focus,
+    .pro-form textarea:focus,
+    .pro-form select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .pro-form input[type="file"] {
+        padding: 0.5rem;
+        background-color: #f9fafb;
+        border: 1px dashed #d1d5db;
+        width: 100%;
+        border-radius: 0.5rem;
+    }
+    .pro-form p { margin-bottom: 1rem; }
+    .pro-form .helptext { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; display: block; }
+    
+    /* Animation for AI Scan */
+    @keyframes scan {
+        0% { top: 0%; }
+        50% { top: 100%; }
+        100% { top: 0%; }
+    }
+    .scanner-line {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: #3b82f6;
+        box-shadow: 0 0 4px #3b82f6;
+        animation: scan 2s infinite linear;
+        display: none;
+    }
+    .scanning .scanner-line { display: block; }
+</style>
 
-      <h3>Apply for this Job</h3>
-      <form action="{% url 'apply_for_job' job_advert.id %}" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{application_form.as_p}}
-        <button type="submit" class="btn">Submit Application</button>
-      </form>
+<div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            
+            <div class="flex items-start gap-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg flex items-center justify-center shadow-sm">
+                    <span class="text-3xl font-bold text-gray-600">{{ job_advert.company_name|slice:":1"|upper }}</span>
+                </div>
+                
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ job_advert.title }}</h1>
+                    <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                        <span class="flex items-center text-blue-600 font-semibold">
+                            <i class="fa-solid fa-building mr-1.5"></i> {{ job_advert.company_name }}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fa-solid fa-location-dot mr-1.5 text-gray-400"></i> {{ job_advert.location|default:"Remote" }}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fa-regular fa-clock mr-1.5 text-gray-400"></i> Posted {{ job_advert.created_at|naturaltime }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition" title="Save Job">
+                    <i class="fa-regular fa-bookmark"></i>
+                </button>
+                <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition" title="Share">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
+                <a href="#application-form" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-full font-bold transition shadow-md flex items-center">
+                    Apply Now <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                </a>
+            </div>
+        </div>
     </div>
-  </div>
-</section>
+</div>
+
+<div class="bg-gray-50 min-h-screen py-10">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-8 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">About the Role</h2>
+                <div class="prose prose-blue max-w-none text-gray-600 text-[15px] leading-relaxed whitespace-pre-line">
+                    {{ job_advert.description }}
+                </div>
+
+                {% if job_advert.skills %}
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Skills & Requirements</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for skill in job_advert.skills.split %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                {{ skill }}
+                            </span>
+                        {% empty %}
+                            <span class="text-gray-500 text-sm">{{ job_advert.skills }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 flex gap-4 items-start">
+                <i class="fa-solid fa-shield-halved text-blue-600 text-xl mt-1"></i>
+                <div>
+                    <h4 class="font-bold text-blue-900 text-sm">Security Tip</h4>
+                    <p class="text-xs text-blue-700 mt-1">
+                        Kite will never ask for money during the application process. Be cautious of any requests for payment or sensitive banking info.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-6">
+            
+            <div class="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-xl shadow-lg p-6 text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-yellow-400"></i> AI Match Check
+                    </h3>
+                    <p class="text-indigo-200 text-xs mt-1 mb-4">Upload your resume to see if you're a good fit for this role.</p>
+                    
+                    <form id="ai-scan-form" class="space-y-3">
+                        <input type="file" id="resume-scan-input" accept=".pdf,.docx,.txt" class="block w-full text-xs text-gray-200 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer">
+                        <button type="button" onclick="analyzeResume()" class="w-full bg-white text-blue-900 font-bold py-2 rounded-lg text-sm hover:bg-gray-100 transition shadow-lg">
+                            Analyze Match
+                        </button>
+                    </form>
+
+                    <div id="ai-result" class="hidden mt-4 pt-4 border-t border-white/20">
+                        <div id="loading-scan" class="hidden text-center">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing...
+                        </div>
+                        <div id="scan-content" class="hidden">
+                            <div class="text-3xl font-bold text-yellow-400 mb-1" id="score-display">0%</div>
+                            <p class="text-xs text-indigo-100" id="feedback-display">Match Score</p>
+                            <button onclick="autoFillApp()" class="mt-3 text-xs underline text-indigo-300 hover:text-white">Auto-fill Application &darr;</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-500 rounded-full blur-3xl opacity-50"></div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">Job Overview</h3>
+                <ul class="space-y-4 text-sm">
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-briefcase w-5"></i> Job Type</span>
+                        <span class="font-semibold text-gray-900">{{ job_advert.job_type }}</span>
+                    </li>
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-layer-group w-5"></i> Experience</span>
+                        <span class="font-semibold text-gray-900">{{ job_advert.experience_level|default:"Not specified" }}</span>
+                    </li>
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-money-bill-wave w-5"></i> Salary</span>
+                        <span class="font-semibold text-gray-900">{{ job_advert.salary_range|default:"Competitive" }}</span>
+                    </li>
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-calendar-check w-5"></i> Date Posted</span>
+                        <span class="font-semibold text-gray-900">{{ job_advert.created_at|date:"M d, Y" }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="application-form" class="bg-white rounded-xl shadow-lg border border-blue-100 sticky top-24 overflow-hidden">
+                <div class="bg-gray-50 border-b border-gray-100 px-6 py-4">
+                    <h3 class="text-lg font-bold text-gray-800">Apply for this position</h3>
+                </div>
+                
+                <div class="p-6">
+                    {% if has_applied %}
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl animate-bounce">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900">Application Received!</h3>
+                            <p class="text-gray-500 text-sm mt-2 mb-6 leading-relaxed">
+                                You have already applied for this position. <br>
+                                You can track the status in your dashboard.
+                            </p>
+                            <a href="{% url 'my_applications' %}" class="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">
+                                <i class="fa-solid fa-list-check mr-2"></i> Track Status
+                            </a>
+                        </div>
+                    {% else %}
+                        <form action="{% url 'apply_for_job' job_advert.id %}" method="POST" enctype="multipart/form-data" class="pro-form space-y-4">
+                            {% csrf_token %}
+                            
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="p-3 text-sm rounded bg-gray-100 text-gray-700 border border-gray-200">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ application_form.as_p }}
+
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-md shadow-blue-500/20 mt-2 flex justify-center items-center gap-2 group">
+                                <span>Submit Application</span>
+                                <i class="fa-solid fa-paper-plane text-xs group-hover:translate-x-1 transition-transform"></i>
+                            </button>
+                            
+                            <p class="text-xs text-center text-gray-400 mt-3 leading-relaxed">
+                                By clicking Submit, you agree to our <a href="#" class="underline">Terms</a>.
+                            </p>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="font-bold text-gray-900 mb-2 text-sm">About {{ job_advert.company_name }}</h3>
+                <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                    {{ job_advert.company_name }} is a leading company in its sector, committed to innovation and growth. Join our team to make an impact.
+                </p>
+                <a href="#" class="text-blue-600 text-xs font-bold hover:underline">View Company Profile &rarr;</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function analyzeResume() {
+        const fileInput = document.getElementById('resume-scan-input');
+        const file = fileInput.files[0];
+        if (!file) { alert("Please select a resume file first."); return; }
+
+        // UI Updates
+        document.getElementById('ai-result').classList.remove('hidden');
+        document.getElementById('loading-scan').classList.remove('hidden');
+        document.getElementById('scan-content').classList.add('hidden');
+
+        // Prepare Data
+        const formData = new FormData();
+        formData.append('resume', file);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        // Send to Backend
+        fetch("{% url 'analyze_resume' job_advert.id %}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading-scan').classList.add('hidden');
+            document.getElementById('scan-content').classList.remove('hidden');
+            
+            if(data.status === 'success' || data.status === 'fail') {
+                // Parse message like "Strong Match! (85%)..."
+                const scoreMatch = data.message.match(/\((\d+)%\)/);
+                const score = scoreMatch ? scoreMatch[1] : '--';
+                
+                const scoreDisplay = document.getElementById('score-display');
+                scoreDisplay.innerText = score + '%';
+                
+                // Color coding
+                if(parseInt(score) > 70) scoreDisplay.classList.replace('text-yellow-400', 'text-green-400');
+                else if(parseInt(score) < 40) scoreDisplay.classList.replace('text-yellow-400', 'text-red-400');
+
+                document.getElementById('feedback-display').innerText = data.message;
+            } else {
+                document.getElementById('feedback-display').innerText = "Error analyzing file.";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('loading-scan').classList.add('hidden');
+            alert("Something went wrong with the AI analysis.");
+        });
+    }
+
+    function autoFillApp() {
+        // Move file from AI scanner to Application Form
+        const scanInput = document.getElementById('resume-scan-input');
+        const appInput = document.querySelector('input[type="file"][name="cv"]'); // Adjust based on your form field name
+        
+        if(scanInput.files.length > 0 && appInput) {
+            const dt = new DataTransfer();
+            dt.items.add(scanInput.files[0]);
+            appInput.files = dt.files;
+            
+            // Scroll to form
+            document.getElementById('application-form').scrollIntoView({behavior: 'smooth'});
+        }
+    }
+</script>
+
 {% endblock %}

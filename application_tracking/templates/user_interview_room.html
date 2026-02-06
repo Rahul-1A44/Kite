@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% with ai_session=application.get_active_interview_session %}
+
+<div class="max-w-7xl mx-auto py-6 px-4 h-[calc(100vh-80px)]">
+
+    <div class="flex flex-col lg:flex-row gap-6 h-full">
+
+        <!-- SIDEBAR INFO -->
+        <div class="w-full lg:w-1/3 flex flex-col gap-6 h-full overflow-y-auto">
+
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-1">
+                    {% if application.job %}
+                    {{ application.job.title }}
+                    {% else %}
+                    {{ application.job_advert.title }}
+                    {% endif %}
+                </h2>
+                <p class="text-sm text-gray-500 mb-4">
+                    {% if application.job %}
+                    {{ application.job.organization.name }}
+                    {% else %}
+                    {{ application.job_advert.company_name }}
+                    {% endif %}
+                </p>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                        <span class="text-gray-500">Current Stage</span>
+                        <span class="font-semibold text-blue-600">{{ application.get_interview_stage_display }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                        <span class="text-gray-500">Applied On</span>
+                        <span class="font-medium">{{ application.created_at|date:"M d, Y" }}</span>
+                    </div>
+                    {% if ai_session %}
+                    <div class="flex justify-between text-sm border-b border-gray-100 pb-2 bg-indigo-50 p-2 rounded-sm">
+                        <span class="text-indigo-800 font-bold">AI Interview Profile</span>
+                        <span
+                            class="text-xs uppercase font-bold text-indigo-500 bg-white px-2 py-0.5 rounded-sm border border-indigo-100">Active</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if not ai_session and application.status != 'REJECTED' and application.status != 'ACCEPTED' %}
+                <div class="mt-6">
+                    <a href="{% url 'start_ai_interview' application.id %}"
+                        onclick="return confirm('Start automated AI interview?')"
+                        class="w-full block text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition shadow-sm">
+                        <i class="fa-solid fa-robot mr-2"></i> Start AI Interview
+                    </a>
+                    <p class="text-xs text-center text-gray-400 mt-2">Required for next stage evaluation</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- TASK SUBMISSION (Hide in AI Mode for cleanliness, or keep? Keep for utility) -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex-1">
+                <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-500"></i> Task Submission
+                </h3>
+
+                <p class="text-sm text-gray-500 mb-6">
+                    If the interviewer has requested a task (coding assignment, presentation, etc.), please upload it
+                    here.
+                </p>
+
+                <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        {{ task_form.task_submission }}
+                    </div>
+                    <button type="submit" name="submit_task"
+                        class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 rounded-lg transition shadow-sm">
+                        Submit Task
+                    </button>
+                </form>
+
+                {% if application.task_submission %}
+                <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg flex items-start gap-3">
+                    <i class="fa-solid fa-file-circle-check text-green-600 text-xl mt-1"></i>
+                    <div>
+                        <p class="text-sm font-bold text-green-800">Task Submitted</p>
+                        <p class="text-xs text-green-600 mb-1">{{ application.task_submitted_at|date:"M d, H:i" }}</p>
+                        <a href="{{ application.task_submission.url }}" target="_blank"
+                            class="text-xs underline text-green-700 hover:text-green-900">View File</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- MAIN CHAT AREA -->
+        <div
+            class="w-full lg:w-2/3 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col overflow-hidden relative">
+
+            {% if ai_session %}
+            <!-- ==============================
+                 AI INTERVIEW INTERFACE 
+                 ============================== -->
+            <div class="p-4 border-b border-indigo-100 bg-indigo-50 flex items-center justify-between">
+                <h3 class="font-bold text-indigo-900 flex items-center gap-2">
+                    <i class="fa-solid fa-robot text-indigo-600"></i> AI Recruiter
+                </h3>
+                <div>
+                    <a href="{% url 'end_ai_interview' application.id %}"
+                        onclick="return confirm('Are you sure you want to end the interview? Analysis will begin immediately.')"
+                        class="text-xs bg-white border border-indigo-200 text-indigo-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 px-3 py-1.5 rounded-sm transition font-bold uppercase tracking-wide">
+                        End Interview
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-white" id="ai-chat-container">
+                {% for log in ai_session.logs.all %}
+                <div class="flex {% if log.role == 'USER' %}justify-end{% else %}justify-start{% endif %}">
+                    <div class="max-w-[85%] rounded-2xl px-5 py-4 text-sm shadow-sm
+                            {% if log.role == 'USER' %}
+                                bg-indigo-600 text-white rounded-br-none
+                            {% else %}
+                                bg-gray-100 text-gray-800 rounded-bl-none border border-gray-200
+                            {% endif %}">
+
+                        {% if log.role == 'AI' %}
+                        <div class="text-[10px] font-bold text-indigo-500 mb-1 uppercase tracking-wide">AI Recruiter
+                        </div>
+                        {% endif %}
+
+                        <div class="whitespace-pre-wrap leading-relaxed">{{ log.content }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Typing Indicator -->
+                <div id="ai-typing" class="hidden flex justify-start">
+                    <div class="bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-none px-4 py-3">
+                        <i class="fa-solid fa-circle-notch fa-spin text-indigo-500"></i> <span
+                            class="text-xs text-gray-500 ml-2">Thinking...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-white border-t border-gray-100">
+                <form id="aiChatForm" onsubmit="sendAiMessage(event)" class="flex gap-3">
+                    {% csrf_token %}
+                    <input type="text" id="aiUserInput"
+                        class="flex-grow border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        placeholder="Type your answer..." required>
+
+                    <button type="submit" id="aiSendBtn"
+                        class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 shadow-md disabled:opacity-50">
+                        <span>Send</span>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+
+            <script>
+                const aiChatContainer = document.getElementById('ai-chat-container');
+                aiChatContainer.scrollTop = aiChatContainer.scrollHeight;
+
+                async function sendAiMessage(e) {
+                    e.preventDefault();
+                    const input = document.getElementById('aiUserInput');
+                    const btn = document.getElementById('aiSendBtn');
+                    const typing = document.getElementById('ai-typing');
+                    const container = document.getElementById('ai-chat-container');
+
+                    const message = input.value;
+                    if (!message) return;
+
+                    // 1. Add User Message to UI
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'flex justify-end';
+                    userDiv.innerHTML = `
+                        <div class="max-w-[85%] rounded-2xl px-5 py-4 text-sm shadow-sm bg-indigo-600 text-white rounded-br-none">
+                            <div class="whitespace-pre-wrap leading-relaxed">${message}</div>
+                        </div>
+                    `;
+                    container.insertBefore(userDiv, typing);
+
+                    input.value = '';
+                    input.disabled = true;
+                    btn.disabled = true;
+                    typing.classList.remove('hidden');
+                    container.scrollTop = container.scrollHeight;
+
+                    // 2. Call API
+                    try {
+                        const response = await fetch("{% url 'ai_chat_api' application.id %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                            },
+                            body: JSON.stringify({ message: message })
+                        });
+                        const data = await response.json();
+
+                        typing.classList.add('hidden');
+
+                        if (data.error) {
+                            alert("Error: " + data.error);
+                        } else {
+                            // 3. Add AI Response
+                            const aiDiv = document.createElement('div');
+                            aiDiv.className = 'flex justify-start';
+                            aiDiv.innerHTML = `
+                                <div class="max-w-[85%] rounded-2xl px-5 py-4 text-sm shadow-sm bg-gray-100 text-gray-800 rounded-bl-none border border-gray-200">
+                                    <div class="text-[10px] font-bold text-indigo-500 mb-1 uppercase tracking-wide">AI Recruiter</div>
+                                    <div class="whitespace-pre-wrap leading-relaxed">${data.ai_message}</div>
+                                </div>
+                            `;
+                            container.insertBefore(aiDiv, typing);
+                            container.scrollTop = container.scrollHeight;
+                        }
+
+                    } catch (err) {
+                        console.error(err);
+                        typing.classList.add('hidden');
+                        alert("Network Error. Please try again.");
+                    } finally {
+                        input.disabled = false;
+                        btn.disabled = false;
+                        input.focus();
+                    }
+                }
+            </script>
+
+            {% else %}
+            <!-- ==============================
+                 MANUAL HUMAN CHAT INTERFACE 
+                 ============================== -->
+            <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-blue-500"></i> Interview Chat
+                </h3>
+                <span class="text-xs text-gray-400">Recruiter & You</span>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-white" id="chat-container">
+                {% for msg in chat_history %}
+                <div class="flex {% if msg.sender == request.user %}justify-end{% else %}justify-start{% endif %}">
+                    <div class="max-w-[80%] rounded-2xl px-5 py-3 text-sm shadow-sm
+                            {% if msg.sender == request.user %}
+                                bg-blue-600 text-white rounded-br-none
+                            {% else %}
+                                bg-gray-100 text-gray-800 rounded-bl-none
+                            {% endif %}">
+
+                        {% if msg.content %}
+                        <div class="whitespace-pre-wrap leading-relaxed">{{ msg.content }}</div>
+                        {% endif %}
+
+                        {% if msg.attachment %}
+                        <div
+                            class="mt-2 pt-2 {% if msg.sender == request.user %}border-white/20{% else %}border-gray-300{% endif %} border-t">
+                            <a href="{{ msg.attachment.url }}" target="_blank"
+                                class="flex items-center gap-2 text-xs font-medium underline hover:opacity-80 transition">
+                                <i class="fa-solid fa-paperclip"></i> Download Attachment
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <p class="text-[10px] mt-1 opacity-70 text-right">
+                            {{ msg.timestamp|time:"H:i" }}
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="h-full flex flex-col items-center justify-center text-gray-400">
+                    <i class="fa-regular fa-comment-dots text-4xl mb-2"></i>
+                    <p class="text-sm">Session started. Waiting for questions...</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="p-4 bg-white border-t border-gray-100">
+                <form method="POST" enctype="multipart/form-data" class="flex flex-col gap-3">
+                    {% csrf_token %}
+
+                    <div class="w-full">
+                        {{ chat_form.content }}
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <div class="w-2/3">
+                            {{ chat_form.attachment }}
+                        </div>
+
+                        <button type="submit" name="send_message"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-md">
+                            <span>Send</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <script>
+                // Auto-scroll chat to bottom
+                const chatContainer = document.getElementById('chat-container');
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            </script>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endwith %}
+{% endblock %}

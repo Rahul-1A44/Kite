@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}{{ job.title }} - Kite{% endblock %}
+
+{% block content %}
+
+<style>
+    /* --- PROFESSIONAL FORM STYLING --- */
+    .pro-form label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    .pro-form input[type="text"],
+    .pro-form input[type="email"],
+    .pro-form input[type="url"],
+    .pro-form input[type="number"],
+    .pro-form textarea,
+    .pro-form select {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        font-size: 0.925rem;
+        color: #111827;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .pro-form input:focus,
+    .pro-form textarea:focus,
+    .pro-form select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .pro-form input[type="file"] {
+        padding: 0.5rem;
+        background-color: #f9fafb;
+        border: 1px dashed #d1d5db;
+        width: 100%;
+        border-radius: 0.5rem;
+    }
+    .pro-form p { margin-bottom: 1rem; }
+    .pro-form .helptext { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; display: block; }
+</style>
+
+<div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            
+            <div class="flex items-start gap-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg flex items-center justify-center shadow-sm overflow-hidden">
+                    {% if job.organization.logo %}
+                        <img src="{{ job.organization.logo.url }}" alt="{{ job.organization.name }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <span class="text-3xl font-bold text-gray-600">{{ job.organization.name|slice:":1"|upper }}</span>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ job.title }}</h1>
+                    <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                        <span class="flex items-center text-blue-600 font-semibold">
+                            <i class="fa-solid fa-building mr-1.5"></i> {{ job.organization.name }}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fa-solid fa-location-dot mr-1.5 text-gray-400"></i> {{ job.location|default:"Remote" }}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fa-regular fa-clock mr-1.5 text-gray-400"></i> Posted {{ job.posted_at|naturaltime }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition" title="Save Job">
+                    <i class="fa-regular fa-bookmark"></i>
+                </button>
+                <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition" title="Share">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
+                <a href="#application-section" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-full font-bold transition shadow-md flex items-center">
+                    Apply Now <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-gray-50 min-h-screen py-10">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-8 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">About the Role</h2>
+                <div class="prose prose-blue max-w-none text-gray-600 text-[15px] leading-relaxed whitespace-pre-line">
+                    {{ job.description }}
+                </div>
+
+                {% if job.skills %}
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Skills & Requirements</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for skill in job.skills.split %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                {{ skill|cut:"," }}
+                            </span>
+                        {% empty %}
+                            <span class="text-gray-500 text-sm">See description.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 flex gap-4 items-start">
+                <i class="fa-solid fa-shield-halved text-blue-600 text-xl mt-1"></i>
+                <div>
+                    <h4 class="font-bold text-blue-900 text-sm">Security Tip</h4>
+                    <p class="text-xs text-blue-700 mt-1">
+                        Kite will never ask for money during the application process. Be cautious of any requests for payment.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-6">
+            
+            <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-xl shadow-lg p-6 text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-2 -mr-2 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl"></div>
+                
+                <h3 class="font-bold text-lg mb-2 flex items-center gap-2 relative z-10">
+                    <i class="fa-solid fa-robot"></i> AI Resume Fit Check
+                </h3>
+                <p class="text-blue-100 text-xs mb-4 relative z-10 leading-relaxed">
+                    Not sure if you qualify? Upload your resume to get an instant match score and missing skills analysis.
+                </p>
+
+                <div id="ai-upload-section" class="relative z-10">
+                    <label class="block mb-2 text-[10px] font-bold uppercase tracking-wider text-blue-200">Upload PDF/DOCX</label>
+                    <input type="file" id="ai-resume-upload" class="block w-full text-xs text-blue-100 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-white file:text-blue-700 hover:file:bg-blue-50 transition cursor-pointer mb-3 bg-white/10 rounded-md border border-white/20 p-1">
+                    
+                    <button onclick="analyzeResume()" class="w-full bg-white text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-50 transition shadow-md text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Match
+                    </button>
+                </div>
+
+                <div id="ai-loading" class="hidden text-center py-6 relative z-10">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-white"></i>
+                    <p class="text-xs font-medium animate-pulse text-blue-100">AI is analyzing your resume...</p>
+                </div>
+
+                <div id="ai-results" class="hidden mt-4 pt-4 border-t border-white/20 relative z-10">
+                    <div class="flex items-end justify-between mb-2">
+                        <span class="text-xs font-bold text-blue-200 uppercase">Match Score</span>
+                        <span id="ai-score" class="text-3xl font-extrabold text-yellow-300">0%</span>
+                    </div>
+                    
+                    <div id="ai-message-box" class="bg-black/20 rounded-md p-3 mb-3 border border-white/10">
+                        <p id="ai-message" class="text-xs text-white leading-relaxed"></p>
+                    </div>
+
+                    <div id="ai-missing-skills-container" class="hidden mb-4">
+                        <p class="text-[10px] font-bold text-red-200 mb-1 uppercase tracking-wide">Missing Skills:</p>
+                        <ul id="ai-missing-skills" class="list-disc list-inside text-xs text-blue-100"></ul>
+                    </div>
+
+                    <a id="view-sources-btn" href="#" class="block text-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold py-2.5 rounded border border-white/30 transition hidden">
+                        <i class="fa-solid fa-book-open mr-1"></i> View Learning Sources
+                    </a>
+                    
+                    <button onclick="resetAI()" class="mt-3 text-[10px] text-blue-200 hover:text-white underline w-full text-center">
+                        Check another resume
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">Job Overview</h3>
+                <ul class="space-y-4 text-sm">
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-briefcase w-5"></i> Job Type</span>
+                        <span class="font-semibold text-gray-900">{{ job.job_type }}</span>
+                    </li>
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-layer-group w-5"></i> Experience</span>
+                        <span class="font-semibold text-gray-900">{{ job.experience_level|default:"Not specified" }}</span>
+                    </li>
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-money-bill-wave w-5"></i> Salary</span>
+                        <span class="font-semibold text-gray-900">{{ job.salary_range|default:"Competitive" }}</span>
+                    </li>
+                    <li class="flex items-start justify-between">
+                        <span class="text-gray-500"><i class="fa-solid fa-calendar-check w-5"></i> Date Posted</span>
+                        <span class="font-semibold text-gray-900">{{ job.posted_at|date:"M d, Y" }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="application-section" class="bg-white rounded-xl shadow-lg border border-blue-100 sticky top-24 overflow-hidden">
+                <div class="bg-gray-50 border-b border-gray-100 px-6 py-4">
+                    <h3 class="text-lg font-bold text-gray-800">Apply for this position</h3>
+                </div>
+                
+                <div class="p-6">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="p-3 mb-4 text-sm rounded-lg border {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% else %}bg-green-50 text-green-700 border-green-200{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form action="{% url 'apply_job' job.id %}" method="POST" enctype="multipart/form-data" class="pro-form space-y-4">
+                        {% csrf_token %}
+                        
+                        <div>
+                            <label>Full Name</label>
+                            <input type="text" name="name" required placeholder="Your full name" value="{{ user.get_full_name|default:'' }}">
+                        </div>
+
+                        <div>
+                            <label>Email Address</label>
+                            <input type="email" name="email" required placeholder="name@example.com" value="{{ user.email|default:'' }}">
+                        </div>
+
+                        <div>
+                            <label>Portfolio / LinkedIn URL</label>
+                            <input type="url" name="portfolio_url" placeholder="https://..." value="{{ user.userprofile.portfolio_url|default:'' }}">
+                        </div>
+
+                        <div>
+                            <label>Upload CV / Resume</label>
+                            <input type="file" name="cv" accept=".pdf,.doc,.docx" required>
+                            <span class="helptext">Accepted formats: PDF, DOC, DOCX</span>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-md shadow-blue-500/20 mt-4 flex justify-center items-center gap-2 group">
+                            <span>Submit Application</span>
+                            <i class="fa-solid fa-paper-plane text-xs group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                        
+                        <p class="text-xs text-center text-gray-400 mt-3 leading-relaxed">
+                            By clicking Submit, you agree to our <a href="#" class="underline">Terms</a>.
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="font-bold text-gray-900 mb-2 text-sm">About {{ job.organization.name }}</h3>
+                <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                    {{ job.organization.description|default:"A leading company in its sector."|truncatewords:20 }}
+                </p>
+                <a href="#" class="text-blue-600 text-xs font-bold hover:underline">View Company Profile &rarr;</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function analyzeResume() {
+        const fileInput = document.getElementById('ai-resume-upload');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert("Please select a resume file first.");
+            return;
+        }
+
+        // Show Loading, Hide Results & Input
+        document.getElementById('ai-upload-section').classList.add('hidden');
+        document.getElementById('ai-loading').classList.remove('hidden');
+        document.getElementById('ai-results').classList.add('hidden');
+
+        const formData = new FormData();
+        formData.append('resume', file);
+        
+        fetch("{% url 'analyze_resume' job.id %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide Loading & Show Results
+            document.getElementById('ai-loading').classList.add('hidden');
+            document.getElementById('ai-results').classList.remove('hidden');
+
+            const scoreEl = document.getElementById('ai-score');
+            const msgEl = document.getElementById('ai-message');
+            const skillsContainer = document.getElementById('ai-missing-skills-container');
+            const skillsList = document.getElementById('ai-missing-skills');
+            const sourcesBtn = document.getElementById('view-sources-btn');
+
+            // 1. Handle Status (Success vs Error)
+            if (data.status === 'error') {
+                // ERROR STATE: Show Red score, Error msg, Hide skills
+                scoreEl.innerText = "0%";
+                scoreEl.className = "text-3xl font-extrabold text-red-400";
+                msgEl.innerText = data.message; // Shows actual error from backend
+                msgEl.className = "text-xs text-red-200 leading-relaxed";
+                
+                skillsContainer.classList.add('hidden');
+                
+            } else {
+                // SUCCESS STATE: Show Score & Skills
+                scoreEl.innerText = data.score + "%";
+                if (data.score >= 80) scoreEl.className = "text-3xl font-extrabold text-green-300";
+                else if (data.score >= 50) scoreEl.className = "text-3xl font-extrabold text-yellow-300";
+                else scoreEl.className = "text-3xl font-extrabold text-red-300";
+                
+                msgEl.innerText = data.message;
+                msgEl.className = "text-xs text-white leading-relaxed";
+
+                // Populate Skills
+                skillsList.innerHTML = '';
+                if (data.missing_skills && data.missing_skills.length > 0) {
+                    skillsContainer.classList.remove('hidden');
+                    data.missing_skills.forEach(skill => {
+                        let li = document.createElement('li');
+                        li.textContent = skill;
+                        skillsList.appendChild(li);
+                    });
+                } else {
+                    skillsContainer.classList.add('hidden');
+                }
+            }
+
+            // 2. ALWAYS Update Learning Sources Button (If job_title exists)
+            // This ensures users can still access learning even if AI fails.
+            if (data.job_title) {
+                sourcesBtn.href = "/sources/?topic=" + encodeURIComponent(data.job_title);
+                sourcesBtn.classList.remove('hidden');
+                
+                // Customize button text based on status
+                if(data.status === 'error') {
+                    sourcesBtn.innerHTML = '<i class="fa-solid fa-book-open mr-1"></i> View Sources for ' + data.job_title;
+                } else {
+                    sourcesBtn.innerHTML = '<i class="fa-solid fa-book-open mr-1"></i> View Recommended Learning';
+                }
+            } else {
+                sourcesBtn.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('ai-loading').classList.add('hidden');
+            document.getElementById('ai-upload-section').classList.remove('hidden');
+            alert("Network Error: Could not connect to server.");
+        });
+    }
+
+    function resetAI() {
+        document.getElementById('ai-results').classList.add('hidden');
+        document.getElementById('ai-upload-section').classList.remove('hidden');
+        document.getElementById('ai-resume-upload').value = ""; // Clear file input
+    }
+</script>
+
+{% endblock %}

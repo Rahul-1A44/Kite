@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+
+    <div class="max-w-3xl w-full">
+
+        <!-- Header / Progress -->
+        <div class="mb-8 text-center">
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+                {{ application.get_interview_stage_display }} Assessment
+            </h2>
+            <p class="text-slate-500">
+                Please complete the following task to proceed to the next stage.
+            </p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden">
+
+            <!-- Task Question Header -->
+            <div class="bg-indigo-600 px-8 py-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="px-2 py-1 bg-white/20 text-white rounded text-xs font-bold uppercase tracking-wide">
+                        {{ task.get_stage_display }}
+                    </span>
+                    <span class="text-indigo-100 text-sm font-mono">ID: TASK-{{ task.id }}</span>
+                </div>
+                <h3 class="text-xl font-bold text-white leading-snug">
+                    {{ task.task_content }}
+                </h3>
+            </div>
+
+            <!-- Submission Form -->
+            <div class="p-8">
+                <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="response_text" class="block text-sm font-bold text-slate-700 mb-2">
+                            Your Answer / Strategy
+                        </label>
+                        <textarea id="response_text" name="response_text" rows="8" required
+                            class="w-full px-4 py-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm placeholder-slate-400"
+                            placeholder="Type your response here..."></textarea>
+                        <p class="text-xs text-slate-500 mt-2">
+                            <i class="fa-solid fa-circle-info"></i> Be concise and specific. The AI will evaluate this
+                            response.
+                        </p>
+                    </div>
+
+                    {% if task.stage == 'TECH' %}
+                    <div>
+                        <label for="response_file" class="block text-sm font-bold text-slate-700 mb-2">
+                            Upload Code/File (Optional)
+                        </label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="response_file"
+                                class="flex flex-col w-full h-32 border-2 border-dashed hover:bg-slate-50 hover:border-indigo-300 group transition rounded-md cursor-pointer justify-center items-center">
+                                <div class="flex flex-col items-center justify-center pt-7 pb-6">
+                                    <i
+                                        class="fa-solid fa-cloud-arrow-up text-3xl text-slate-300 group-hover:text-indigo-500 mb-3 transition"></i>
+                                    <p class="text-sm text-slate-500 group-hover:text-indigo-600 transition">
+                                        <span class="font-semibold">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p class="text-xs text-slate-400">PDF, PY, JS, ZIP (MAX 5MB)</p>
+                                </div>
+                                <input type="file" name="response_file" id="response_file" class="hidden" />
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end">
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-md shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                            Submit Assessment <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Simple file name display logic
+    const fileInput = document.getElementById('response_file');
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                const label = e.target.closest('label').querySelector('p.text-sm');
+                label.innerHTML = `<span class="font-bold text-indigo-600">${fileName}</span>`;
+            }
+        });
+    }
+</script>
+{% endblock %}

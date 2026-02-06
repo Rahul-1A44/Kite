@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Knowledge Hub - Kite Enterprise{% endblock %}
+
+{% block content %}
+
+<input type="hidden" id="sourcesApiUrl" value="{% url 'get_sources_api' %}">
+
+<!-- HERO / SEARCH SECTION -->
+<div class="bg-slate-900 text-white border-b border-slate-800">
+    <div class="max-w-4xl mx-auto px-6 py-16 text-center">
+
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-slate-700 bg-slate-800/50 mb-6">
+            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Kite Intelligence Engine</span>
+        </div>
+
+        <h1 class="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
+            Technical Resource Hub
+        </h1>
+        <p class="text-slate-400 text-lg mb-10 max-w-2xl mx-auto font-light">
+            Generate curated learning paths referenced from trusted technical sources.
+        </p>
+
+        <div class="bg-white p-1.5 rounded-sm flex flex-col md:flex-row items-center gap-2 max-w-2xl mx-auto shadow-xl">
+            <div class="flex-1 flex items-center px-4 py-2 w-full bg-transparent">
+                <i class="fa-solid fa-terminal text-slate-400 mr-3 text-sm"></i>
+                <input type="text" id="topicInput" placeholder="Enter topic tag (e.g. 'React Performance')"
+                    class="w-full bg-transparent outline-none text-slate-900 placeholder-slate-400 text-base font-medium">
+            </div>
+            <button onclick="triggerSearch()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-sm font-bold uppercase text-xs tracking-wider transition flex items-center justify-center gap-2 w-full md:w-auto">
+                <span id="btnText">Initialize Path</span>
+                <i id="btnIcon" class="fa-solid fa-code-branch"></i>
+                <i id="loadingSpinner" class="fa-solid fa-circle-notch fa-spin hidden"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- RESULTS AREA -->
+<div class="bg-slate-50 min-h-screen py-12">
+    <div class="max-w-7xl mx-auto px-6">
+
+        <!-- EMPTY STATE -->
+        <div id="initialState" class="text-center py-24 border border-dashed border-slate-300 rounded-sm">
+            <div
+                class="w-16 h-16 bg-white border border-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-layer-group text-2xl text-slate-300"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Ready to Curate</h3>
+            <p class="text-slate-500 text-sm mt-1">Input a technical topic above to retrieve documentation and media.
+            </p>
+        </div>
+
+        <!-- SKELETON LOADER -->
+        <div id="skeletonLoader" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white border border-slate-200 h-96 animate-pulse p-4">
+                <div class="h-6 bg-slate-100 w-1/2 mb-4"></div>
+                <div class="space-y-3">
+                    <div class="h-16 bg-slate-50"></div>
+                    <div class="h-16 bg-slate-50"></div>
+                    <div class="h-16 bg-slate-50"></div>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 h-96 animate-pulse p-4 delay-75">
+                <div class="h-6 bg-slate-100 w-1/2 mb-4"></div>
+                <div class="space-y-3">
+                    <div class="h-16 bg-slate-50"></div>
+                    <div class="h-16 bg-slate-50"></div>
+                    <div class="h-16 bg-slate-50"></div>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 h-96 animate-pulse p-4 delay-150">
+                <div class="h-6 bg-slate-100 w-1/2 mb-4"></div>
+                <div class="space-y-3">
+                    <div class="h-16 bg-slate-50"></div>
+                    <div class="h-16 bg-slate-50"></div>
+                    <div class="h-16 bg-slate-50"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT GRID -->
+        <div id="resultsGrid" class="hidden grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <!-- COLUMN 1: VIDEO -->
+            <div class="flex flex-col h-full">
+                <div
+                    class="bg-white border border-slate-200 border-b-0 p-4 flex items-center justify-between shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-brands fa-youtube text-red-600"></i> Video Feeds
+                    </h3>
+                    <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-sm">MEDIA</span>
+                </div>
+                <div class="bg-white border border-slate-200 p-4 flex-1 h-[600px] overflow-y-auto custom-scrollbar">
+                    <div id="videoList" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- COLUMN 2: BOOKS -->
+            <div class="flex flex-col h-full">
+                <div
+                    class="bg-white border border-slate-200 border-b-0 p-4 flex items-center justify-between shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-book text-orange-600"></i> Bibliography
+                    </h3>
+                    <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-sm">TEXT</span>
+                </div>
+                <div class="bg-white border border-slate-200 p-4 flex-1 h-[600px] overflow-y-auto custom-scrollbar">
+                    <div id="bookList" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- COLUMN 3: DOCS -->
+            <div class="flex flex-col h-full">
+                <div
+                    class="bg-white border border-slate-200 border-b-0 p-4 flex items-center justify-between shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-code text-blue-600"></i> Documentation
+                    </h3>
+                    <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-sm">WEB</span>
+                </div>
+                <div class="bg-white border border-slate-200 p-4 flex-1 h-[600px] overflow-y-auto custom-scrollbar">
+                    <div id="webList" class="space-y-3"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+        const topic = params.get('topic');
+        if (topic) {
+            const decodedTopic = decodeURIComponent(topic);
+            document.getElementById('topicInput').value = decodedTopic;
+            fetchResources(decodedTopic);
+        }
+
+        document.getElementById('topicInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') triggerSearch();
+        });
+    });
+
+    function triggerSearch() {
+        const topic = document.getElementById('topicInput').value.trim();
+        if (topic) {
+            const newUrl = `${window.location.pathname}?topic=${encodeURIComponent(topic)}`;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+            fetchResources(topic);
+        } else {
+            alert("Input required.");
+        }
+    }
+
+    function fetchResources(topic) {
+        const apiUrl = document.getElementById('sourcesApiUrl').value;
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const spinner = document.getElementById('loadingSpinner');
+
+        const initialState = document.getElementById('initialState');
+        const skeleton = document.getElementById('skeletonLoader');
+        const results = document.getElementById('resultsGrid');
+
+        btnText.textContent = "Processing...";
+        btnIcon.classList.add('hidden');
+        spinner.classList.remove('hidden');
+
+        initialState.classList.add('hidden');
+        results.classList.add('hidden');
+        skeleton.classList.remove('hidden');
+
+        fetch(`${apiUrl}?topic=${encodeURIComponent(topic)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.data) {
+                    renderContent(data.data);
+                    skeleton.classList.add('hidden');
+                    results.classList.remove('hidden');
+                } else {
+                    skeleton.classList.add('hidden');
+                    initialState.classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                skeleton.classList.add('hidden');
+                initialState.classList.remove('hidden');
+            })
+            .finally(() => {
+                btnText.textContent = "Initialize Path";
+                btnIcon.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            });
+    }
+
+    function renderContent(data) {
+        const videoList = document.getElementById('videoList');
+        const bookList = document.getElementById('bookList');
+        const webList = document.getElementById('webList');
+
+        videoList.innerHTML = '';
+        bookList.innerHTML = '';
+        webList.innerHTML = '';
+
+        const createCard = (item, icon, colorClass, linkPrefix = "") => {
+            const link = item.link || item.url || "#";
+            const finalLink = (link === "#" || link === "") && linkPrefix
+                ? linkPrefix + encodeURIComponent(item.title)
+                : link;
+
+            // Industrial Card Design
+            return `
+                <a href="${finalLink}" target="_blank" class="block p-3 rounded-sm border border-slate-200 bg-slate-50 hover:bg-white hover:border-${colorClass}-400 hover:shadow-sm transition group">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 text-${colorClass}-600 shrink-0">
+                            <i class="${icon} text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm leading-tight group-hover:text-blue-700 transition mb-0.5 line-clamp-2">${item.title || item.name}</h4>
+                            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wide">${item.channel || item.author || item.source || "Source"}</p>
+                        </div>
+                    </div>
+                </a>
+            `;
+        };
+
+        if (data.videos && Array.isArray(data.videos)) {
+            data.videos.forEach(v => {
+                videoList.innerHTML += createCard(v, "fa-brands fa-youtube", "red", "https://www.youtube.com/results?search_query=");
+            });
+        }
+
+        if (data.books && Array.isArray(data.books)) {
+            data.books.forEach(b => {
+                bookList.innerHTML += createCard(b, "fa-solid fa-book", "orange", "https://www.google.com/search?tbm=bks&q=");
+            });
+        }
+
+        const webs = data.articles || data.websites || data.documentation || [];
+        if (Array.isArray(webs)) {
+            webs.forEach(w => {
+                webList.innerHTML += createCard(w, "fa-solid fa-link", "blue", "https://www.google.com/search?q=");
+            });
+        }
+    }
+</script>
+{% endblock %}

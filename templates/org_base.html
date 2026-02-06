@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kite Employer Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    
+    <style>
+        /* Sidebar Active State */
+        .nav-item.active {
+            background-color: #EFF6FF; /* blue-50 */
+            color: #2563EB; /* blue-600 */
+            border-right: 3px solid #2563EB;
+        }
+        body { background-color: #F3F4F6; } /* Light gray background */
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex">
+        <div>
+            <div class="h-16 flex items-center px-6 border-b border-gray-100">
+                <a href="{% url 'home' %}" class="flex items-center gap-2 text-xl font-bold text-gray-800">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xs">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <span>Kite <span class="text-xs text-gray-400 font-normal uppercase ml-1">Org</span></span>
+                </a>
+            </div>
+
+            <nav class="mt-6 px-4 space-y-1">
+                <a href="{% url 'org_dashboard' %}" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition {% if request.resolver_match.url_name == 'org_dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                </a>
+                
+                <a href="{% url 'org_my_jobs' %}" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition {% if request.resolver_match.url_name == 'org_my_jobs' %}active{% endif %}">
+                    <i class="fa-solid fa-briefcase w-5"></i> My Jobs
+                </a>
+
+                <a href="{% url 'org_candidates' %}" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition {% if request.resolver_match.url_name == 'org_candidates' %}active{% endif %}">
+                    <i class="fa-solid fa-users w-5"></i> Candidates
+                </a>
+
+                <a href="{% url 'org_interviews' %}" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition {% if request.resolver_match.url_name == 'org_interviews' %}active{% endif %}">
+                    <i class="fa-solid fa-calendar-check w-5"></i> Interviews
+                </a>
+                
+                <a href="{% url 'org_inbox' %}" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition {% if request.resolver_match.url_name == 'org_inbox' %}active{% endif %}">
+                    <i class="fa-solid fa-inbox w-5"></i> Inbox
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center gap-3 mb-4 px-2">
+                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold">
+                    {{ user.first_name|first }}
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-bold text-gray-900 truncate">{{ user.first_name }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+                </div>
+            </div>
+            
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition font-medium">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:hidden">
+            <span class="font-bold text-gray-800">Kite Dashboard</span>
+            <button class="text-gray-600"><i class="fa-solid fa-bars text-xl"></i></button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            {% if messages %}
+                <div class="mb-6 space-y-2">
+                    {% for message in messages %}
+                        <div class="p-4 rounded-lg text-sm font-semibold shadow-sm border-l-4 flex items-center gap-3
+                            {% if message.tags == 'error' %} bg-red-50 text-red-700 border-red-500
+                            {% elif message.tags == 'success' %} bg-green-50 text-green-700 border-green-500
+                            {% else %} bg-blue-50 text-blue-700 border-blue-500 {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+</body>
+</html>

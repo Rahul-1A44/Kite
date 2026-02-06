@@ -1,22 +1,131 @@
 {% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
 
-{% block title %} New Advert {% endblock %}
+{% block title %}Post a Job - Kite Enterprise{% endblock %}
 
 {% block content %}
 
-{% include 'header.html' %}
+<div class="bg-gray-50 min-h-screen">
 
-<section class="detail-page">
-  <div class="detail-container container">
-    <div class="job-detail">
-      <h2>{{title}}</h2>
-      <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{job_advert_form.as_p}}
-        <button type="submit" class="btn">{{btn_text}}</button>
-      </form>
+    <!-- PAGE HEADER -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight uppercase">New Position Requisition</h1>
+                <p class="text-slate-500 text-xs mt-1 font-medium">Create a new vacancy record in the system.</p>
+            </div>
+            <div class="hidden md:block">
+                <span
+                    class="text-xs font-bold text-slate-400 uppercase tracking-widest border border-slate-200 px-3 py-1 rounded-sm">Step
+                    1 of 1</span>
+            </div>
+        </div>
     </div>
 
-  </div>
-</section>
+    <!-- MAIN CONTENT -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- FORM SECTION (8 Cols) -->
+            <div class="lg:col-span-8">
+                <div class="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+                    <div class="px-8 py-4 bg-slate-50 border-b border-gray-200">
+                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Job Specifications</h2>
+                    </div>
+
+                    <div class="p-8">
+                        <form method="post" enctype="multipart/form-data" class="pro-form space-y-6">
+                            {% csrf_token %}
+
+                            {% if job_advert_form.errors %}
+                            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-sm">
+                                <p class="font-bold text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Validation Error
+                                </p>
+                                <div class="mt-2 text-xs ml-6">
+                                    {{ job_advert_form.errors }}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Loop through fields to render them cleanly if needed, or use as_p -->
+                            <!-- Using as_p with pro-form styling handled in CSS -->
+                            {{ job_advert_form.as_p }}
+
+                            <div class="mt-10 pt-6 border-t border-gray-100 flex items-center justify-end gap-4">
+                                <a href="{% url 'home' %}"
+                                    class="px-6 py-2.5 border border-slate-300 text-slate-600 font-bold text-sm rounded-sm hover:bg-slate-50 transition">
+                                    Cancel
+                                </a>
+                                <button type="submit"
+                                    class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-sm shadow-sm transition flex items-center gap-2">
+                                    <span>{{ btn_text|default:"Publish Requisition" }}</span>
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR INFO (4 Cols) -->
+            <div class="lg:col-span-4 space-y-6">
+
+                <!-- Guidelines Panel -->
+                <div class="bg-white border border-gray-200 rounded-sm overflow-hidden">
+                    <div class="bg-slate-900 px-6 py-4 border-b border-slate-800">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-book text-blue-500"></i> Guidelines
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4">
+                            <li class="flex gap-3">
+                                <div class="mt-0.5"><i class="fa-solid fa-angle-right text-blue-600 text-xs"></i></div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Standardized Titles</p>
+                                    <p class="text-xs text-slate-500 mt-1">Use industry-standard job titles to maximize
+                                        search visibility and alignment.</p>
+                                </div>
+                            </li>
+                            <li class="flex gap-3">
+                                <div class="mt-0.5"><i class="fa-solid fa-angle-right text-blue-600 text-xs"></i></div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Detailed Scope</p>
+                                    <p class="text-xs text-slate-500 mt-1">Clearly define core responsibilities and
+                                        daily tasks.</p>
+                                </div>
+                            </li>
+                            <li class="flex gap-3">
+                                <div class="mt-0.5"><i class="fa-solid fa-angle-right text-blue-600 text-xs"></i></div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Skill Taxonomy</p>
+                                    <p class="text-xs text-slate-500 mt-1">List hard skills explicitly (e.g., "Python",
+                                        "React") for AI parsing.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- AI Info -->
+                <div class="bg-blue-50 border border-blue-100 rounded-sm p-6">
+                    <h3 class="text-sm font-bold text-blue-900 uppercase tracking-wide mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip"></i> System Logic
+                    </h3>
+                    <p class="text-xs text-blue-800 leading-relaxed">
+                        The <strong>Kite Logic Engine</strong> cross-references the <span
+                            class="font-mono bg-blue-100 px-1 rounded">skills</span> and <span
+                            class="font-mono bg-blue-100 px-1 rounded">description</span> fields against candidate
+                        profiles. Precision in these fields directly correlates to higher match quality scores.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
 {% endblock %}

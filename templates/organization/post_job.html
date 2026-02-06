@@ -1,0 +1,67 @@
+{% extends 'org_base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 p-8 flex justify-center">
+    <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl overflow-hidden">
+        
+        <div class="bg-blue-900 p-8 text-white flex justify-between items-center">
+            <div>
+                <h2 class="text-3xl font-bold">Post a New Job</h2>
+                <p class="text-blue-200 mt-1">Find the perfect talent for {{ org.name }}</p>
+            </div>
+            <a href="{% url 'org_dashboard' %}" class="text-blue-200 hover:text-white transition">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </a>
+        </div>
+
+        <div class="p-8">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Job Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Location</label>
+                        {{ form.location }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Job Type</label>
+                        {{ form.job_type }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Salary Range</label>
+                        {{ form.salary_range }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Application Deadline</label>
+                    {{ form.deadline }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Job Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Requirements</label>
+                    {{ form.requirements }}
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-1">
+                        🚀 Publish Job Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

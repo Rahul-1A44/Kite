@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+        
+        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fa-solid fa-building text-2xl"></i>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Organization Profile Missing</h2>
+        
+        <p class="text-gray-600 mb-8">
+            You are logged in as <strong>{{ request.user.email }}</strong>, but this account is not linked to any Organization Dashboard yet.
+        </p>
+
+        <div class="space-y-3">
+            <a href="#" 
+               class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition" 
+               onclick="alert('Please create an organization registration view first, then update this link in org_setup_prompt.html')">
+                Create Organization Profile
+            </a>
+
+            <a href="/" class="block w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition">
+                Go Back Home
+            </a>
+        </div>
+
+        <p class="text-xs text-gray-400 mt-6">
+            If you believe this is an error, please contact support.
+        </p>
+    </div>
+</div>
+{% endblock %}

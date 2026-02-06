@@ -1,0 +1,177 @@
+{% extends 'org_base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 p-6 flex justify-center">
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col h-[80vh]">
+        
+        <div class="bg-white border-b border-gray-100 p-4 flex items-center justify-between z-10 shadow-sm">
+            
+            <div class="flex items-center gap-4">
+                <a href="{% url 'org_inbox' %}" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        {{ applicant.first_name|first }}
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-lg leading-tight">{{ applicant.first_name }} {{ applicant.last_name }}</h2>
+                        <p class="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full inline-block border border-green-100">Applicant</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                {% if application_status == 'ACCEPTED' %}
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-200 flex items-center gap-1">
+                        <i class="fa-solid fa-check-circle"></i> Hired
+                    </span>
+                {% elif application_status == 'REJECTED' %}
+                    <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full border border-red-200 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-xmark"></i> Rejected
+                    </span>
+                {% endif %}
+
+                {% if application_status != 'ACCEPTED' and application_status != 'REJECTED' and application_id %}
+                    <a href="{% url 'org_make_decision' application_id=application_id decision='reject' %}" 
+                       onclick="return confirm('Are you sure you want to REJECT this candidate?');"
+                       class="px-4 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold rounded-lg transition shadow-sm">
+                        Reject
+                    </a>
+
+                    <a href="{% url 'org_make_decision' application_id=application_id decision='hire' %}" 
+                       onclick="return confirm('Are you sure you want to HIRE this candidate?');"
+                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition shadow-md flex items-center gap-1">
+                        <i class="fa-solid fa-check"></i> Hire
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50" id="chat-container">
+            {% for msg in chat_history %}
+                {% if msg.sender == request.user %}
+                    <div class="flex justify-end">
+                        <div class="max-w-[75%]">
+                            <div class="bg-blue-600 text-white px-5 py-3 rounded-2xl rounded-tr-none shadow-md">
+                                {% if msg.content %}
+                                    <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
+                                {% endif %}
+                                
+                                {% if msg.attachment %}
+                                    <div class="mt-2 pt-2 border-t border-white/20">
+                                        <a href="{{ msg.attachment.url }}" target="_blank" class="flex items-center gap-2 text-xs font-medium hover:text-blue-100 underline transition">
+                                            <i class="fa-solid fa-paperclip"></i> Download File
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <span class="text-[10px] text-gray-400 block text-right mt-1 font-medium mr-1">{{ msg.timestamp|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="flex justify-start">
+                        <div class="max-w-[75%]">
+                            <div class="bg-white text-gray-800 px-5 py-3 rounded-2xl rounded-tl-none shadow-sm border border-gray-200">
+                                {% if msg.content %}
+                                    <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
+                                {% endif %}
+
+                                {% if msg.attachment %}
+                                    <div class="mt-2 pt-2 border-t border-gray-100">
+                                        <a href="{{ msg.attachment.url }}" target="_blank" class="flex items-center gap-2 text-xs font-medium text-blue-600 hover:text-blue-800 underline transition">
+                                            <i class="fa-solid fa-file-arrow-down"></i> View Attachment
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <span class="text-[10px] text-gray-400 block mt-1 font-medium ml-1">{{ msg.timestamp|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fa-regular fa-paper-plane text-2xl opacity-50"></i>
+                    </div>
+                    <p class="font-medium">No messages yet.</p>
+                    <p class="text-sm">Start the conversation with {{ applicant.first_name }}!</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="p-4 bg-white border-t border-gray-100">
+            <form method="POST" enctype="multipart/form-data" class="flex flex-col gap-3">
+                {% csrf_token %}
+                
+                <div class="relative w-full">
+                    {{ form.content }}
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 mr-4">
+                        {{ form.attachment }}
+                    </div>
+
+                    <button type="submit" class="h-[40px] px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 font-medium">
+                        <span>Send</span>
+                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to bottom on load
+    document.addEventListener("DOMContentLoaded", function() {
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+</script>
+
+<style>
+    /* Force style the Django form widget (textarea) */
+    textarea {
+        width: 100%;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        outline: none;
+        resize: none;
+        height: 60px;
+        transition: all 0.2s;
+        line-height: 1.5;
+    }
+    textarea:focus {
+        background-color: #ffffff;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Style file input slightly better */
+    input[type="file"] {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    /* Hide scrollbar for cleaner look */
+    #chat-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    #chat-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #chat-container::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
+    }
+</style>
+{% endblock %}

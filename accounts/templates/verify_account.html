@@ -1,33 +1,103 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Account | Kite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* FORCE INPUT VISIBILITY (Fixes Tailwind Reset) */
+        .force-input-style input {
+            display: block !important;
+            width: 100% !important;
+            height: 50px !important;
+            padding: 10px 15px !important;
+            background-color: #f9fafb !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            color: #111827 !important;
+            font-size: 18px !important;
+            letter-spacing: 2px !important; /* Spaced out for code entry */
+            text-align: center !important;
+            margin-top: 5px !important;
+            outline: none !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+        .force-input-style input:focus {
+            background-color: #ffffff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="bg-white font-sans">
 
-{% block title %} | Verify Account {% endblock %}
-
-{% block content %}
-<div class="auth-content">
-    <div class="auth-container">
-
-        <!-- Alerts -->
-        {% include 'alerts.html' %}
-        <div class="auth-card">
-            <div class="auth-header">
-                <h2><span class="header-icon">&#128274;</span> Verify Account</h2>
-            </div>
-            <form action="{% url 'verify_account' %}" method="POST">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="code" class="form-label">Verification Code</label>
-                    <input type="hidden" name="email" value="{{ email }}">
-                    <input type="text" name="code" id="code" class="form-control"
-                        placeholder="Enter your verification code" required>
+    <div class="min-h-screen flex">
+        
+        <div class="hidden lg:flex w-1/2 bg-blue-600 items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-900 opacity-90 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" class="absolute inset-0 w-full h-full object-cover" alt="Security">
+            
+            <div class="relative z-20 text-white p-12 max-w-xl text-center">
+                <div class="mb-6 inline-block p-4 rounded-full bg-white/20 backdrop-blur-sm">
+                    <i class="fa-solid fa-shield-halved text-5xl"></i>
                 </div>
-                <button type="submit" class="btn">Verify</button>
-            </form>
-            <p class="form-group">
-                <a href="" style="color: #1e3a64;">Back to Registration</a>
-            </p>
+                <h1 class="text-4xl font-bold mb-4">Security First.</h1>
+                <p class="text-xl text-blue-100">Please verify your identity to access the Kite career portal.</p>
+            </div>
+        </div>
 
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+            <div class="w-full max-w-md">
+                
+                <div class="mb-6">
+                    {% include 'alerts.html' %}
+                </div>
+
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+                        <i class="fa-solid fa-envelope-open-text text-2xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900">Verify Account</h2>
+                    <p class="text-gray-500 mt-2">
+                        We sent a code to <span class="font-semibold text-gray-800">{{ email }}</span>.
+                        <br>Enter it below to confirm your email.
+                    </p>
+                </div>
+
+                <form method="POST" action="{% url 'verify_account' %}" class="force-input-style space-y-6">
+                    {% csrf_token %}
+                    
+                    <input type="hidden" name="email" value="{{ email }}">
+
+                    <div>
+                        <label for="code" class="block text-sm font-bold text-gray-700 mb-2 text-center uppercase tracking-wide">Verification Code</label>
+                        <input 
+                            type="text" 
+                            name="code" 
+                            id="code" 
+                            placeholder="Ex: aB3dE" 
+                            maxlength="10"
+                            required 
+                            autofocus>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-300 shadow-lg shadow-blue-500/30 transform hover:-translate-y-0.5">
+                        Verify Code <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </form>
+
+                <div class="mt-8 text-center">
+                    <a href="{% url 'register' %}" class="text-gray-400 hover:text-gray-600 text-sm flex items-center justify-center transition">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Registration
+                    </a>
+                </div>
+
+            </div>
         </div>
     </div>
-</div>
 
-{% endblock %}
+</body>
+</html>

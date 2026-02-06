@@ -1,0 +1,105 @@
+{% extends 'org_base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto h-[calc(100vh-120px)] flex flex-col">
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Interview Management</h1>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="divide-y divide-gray-100">
+            {% for app in applicants %}
+            <div class="p-6 hover:bg-gray-50 transition border-l-4 border-transparent">
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+
+                    <!-- INFO -->
+                    <div class="flex items-start gap-4 min-w-[250px]">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center font-bold">
+                            {{ app.name|first }}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">{{ app.name }}</h3>
+                            <p class="text-xs text-gray-500">{{ app.job_advert.title }}</p>
+                        </div>
+                    </div>
+
+                    <!-- AI/TASKS -->
+                    <div class="flex-1 w-full px-4">
+                        {% if app.tasks.exists %}
+                        <div class="bg-indigo-50 p-3 rounded-lg">
+                            <h4 class="font-bold text-xs text-indigo-800 mb-2">ASSESSMENTS (DEBUG MODE)</h4>
+                            {% for task in app.tasks.all %}
+                            <div class="bg-white p-2 border mb-2 flex justify-between">
+                                <div>
+                                    <!-- Debugging output -->
+                                    <span class="block font-bold">Stage: {{ task.stage }}</span>
+                                    <span class="block text-xs">Created: {{ task.created_at }}</span>
+                                </div>
+                                <div>
+                                    Score: {{ task.score }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- AI SESSION -->
+                        {% with ai_session=app.ai_sessions.last %}
+                        {% if ai_session %}
+                        <div class="mt-2 bg-green-50 p-2">
+                            AI Score: {{ ai_session.final_score }}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div class="min-w-[140px] flex flex-col gap-2">
+                        <span class="badg text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">{{ app.status
+                            }}</span>
+
+                        <div class="flex flex-wrap gap-2">
+                            <!-- CHAT -->
+                            {% if app.user %}
+                            <a href="{% url 'org_chat' app.user.id %}" target="_blank"
+                                class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-700 border border-gray-300">
+                                <i class="fa-regular fa-message"></i> Chat
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        <div class="border-t border-gray-100 my-1 pt-1">
+                            <h5 class="text-[10px] font-bold text-gray-400 uppercase">Move Stage</h5>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                <a href="{% url 'org_trigger_interview' app.id 'HR' %}"
+                                    class="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 border border-blue-100">HR</a>
+                                <a href="{% url 'org_trigger_interview' app.id 'TECH' %}"
+                                    class="text-[10px] bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100 border border-purple-100">Tech</a>
+                                <a href="{% url 'org_trigger_interview' app.id 'FINAL' %}"
+                                    class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 border border-indigo-100">Final</a>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-gray-100 my-1 pt-1">
+                            <h5 class="text-[10px] font-bold text-gray-400 uppercase">Decision</h5>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                <a href="{% url 'org_make_decision' app.id 'hire' %}"
+                                    onclick="return confirm('Are you sure you want to HIRE this candidate?')"
+                                    class="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 border border-green-100">Hire</a>
+                                <a href="{% url 'org_make_decision' app.id 'reject' %}"
+                                    onclick="return confirm('Are you sure you want to REJECT this candidate?')"
+                                    class="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 border border-red-100">Reject</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-10 text-center">No applicants.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

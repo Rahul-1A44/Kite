@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block navbar %}
+<!-- Override Default Navbar for Clean Registration Flow -->
+<nav class="absolute top-0 left-0 w-full p-6 z-50">
+    <div class="container mx-auto">
+        <a href="{% url 'home' %}" class="flex items-center gap-3 text-slate-900 hover:opacity-80 transition w-fit">
+            <div class="w-8 h-8 bg-blue-600 rounded-sm flex items-center justify-center text-white text-xs shadow-md">
+                <i class="fa-solid fa-building"></i>
+            </div>
+            <span class="font-bold text-lg tracking-tight uppercase">Kite <span
+                    class="text-slate-500 text-sm font-normal border-l border-slate-300 pl-2 ml-2">Organization</span></span>
+        </a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Use h-screen to force full height and hidden overflow for split layout effect if desired, 
+     but standard min-h-screen is safer for varying form lengths -->
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4 md:p-8 pt-24">
+
+    <div
+        class="bg-white w-full max-w-6xl rounded-sm border border-slate-200 shadow-xl overflow-hidden flex flex-col md:flex-row relative">
+
+        <!-- LEFT BRANDING COLUMN -->
+        <div class="md:w-5/12 bg-slate-900 text-white flex flex-col justify-between relative overflow-hidden p-10">
+            <!-- Geometric Pattern -->
+            <div class="absolute inset-0 opacity-10">
+                <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <defs>
+                        <pattern id="grid-org" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <rect width="100%" height="100%" fill="none" />
+                            <path d="M0 10 L10 0" stroke="white" stroke-width="0.5" />
+                        </pattern>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#grid-org)" />
+                </svg>
+            </div>
+
+            <div class="relative z-10 hidden md:block mt-8">
+                <h2 class="text-3xl font-bold leading-tight uppercase tracking-tight mb-6">Enterprise Infrastructure
+                </h2>
+                <p class="text-slate-400 text-sm leading-relaxed mb-8 border-l-2 border-blue-600 pl-4">
+                    Deploy your recruitment pipeline on Kite's industrial-grade platform. Automate screening, track
+                    applicants, and secure top talent with precision.
+                </p>
+
+                <ul class="space-y-6">
+                    <li class="flex items-start gap-4 group">
+                        <div
+                            class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-sm flex items-center justify-center text-blue-500 group-hover:text-white group-hover:bg-blue-600 transition text-sm">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-sm uppercase tracking-wide block text-slate-200">AI Screening
+                                Core</span>
+                            <span class="text-xs text-slate-500">Reduce manual filtering by 90%.</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4 group">
+                        <div
+                            class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-sm flex items-center justify-center text-blue-500 group-hover:text-white group-hover:bg-blue-600 transition text-sm">
+                            <i class="fa-solid fa-server"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-sm uppercase tracking-wide block text-slate-200">Central
+                                Dashboard</span>
+                            <span class="text-xs text-slate-500">Real-time candidate tracking.</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4 group">
+                        <div
+                            class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-sm flex items-center justify-center text-blue-500 group-hover:text-white group-hover:bg-blue-600 transition text-sm">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-sm uppercase tracking-wide block text-slate-200">Verified
+                                Talent</span>
+                            <span class="text-xs text-slate-500">Access pre-vetted professionals.</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="relative z-10 mt-10 md:mt-0 pt-6 border-t border-slate-800 hidden md:block">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <i class="fa-solid fa-shield-cat text-blue-600"></i> Encrypted Channel
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT FORM COLUMN -->
+        <div class="md:w-7/12 p-8 md:p-12 bg-white">
+            <div class="max-w-xl mx-auto">
+                <div class="mb-8 pb-4 border-b border-slate-100">
+                    <h1 class="text-xl font-bold text-slate-900 uppercase tracking-tight mb-2">Organization Registration
+                    </h1>
+                    <p class="text-xs text-slate-500 font-medium">Verify your entity details to initialize your
+                        workspace.</p>
+                </div>
+
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">
+                            Organization Name <span class="text-red-500">*</span>
+                        </label>
+                        {{form.name}}
+                        {% if form.name.errors %}
+                        <p class="text-red-500 text-xs mt-1 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation"></i> {{form.name.errors.0}}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">
+                                Official Email <span class="text-red-500">*</span>
+                            </label>
+                            {{form.contact_email}}
+                            {% if form.contact_email.errors %}
+                            <p class="text-red-500 text-xs mt-1 font-bold">{{form.contact_email.errors.0}}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">
+                                Phone Number
+                            </label>
+                            {{form.phone_number}}
+                            {% if form.phone_number.errors %}
+                            <p class="text-red-500 text-xs mt-1 font-bold">{{form.phone_number.errors.0}}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">
+                                Registration No. <span class="text-red-500">*</span>
+                            </label>
+                            {{form.registration_number}}
+                            {% if form.registration_number.errors %}
+                            <p class="text-red-500 text-xs mt-1 font-bold">{{form.registration_number.errors.0}}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">
+                                Website URL
+                            </label>
+                            {{form.website}}
+                            {% if form.website.errors %}
+                            <p class="text-red-500 text-xs mt-1 font-bold">{{form.website.errors.0}}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-sm shadow-sm transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
+                            <span>Register Entity</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                    <p class="text-slate-500 text-xs font-medium">
+                        Already have an organization account?
+                        <a href="{% url 'login' %}"
+                            class="text-blue-600 font-bold hover:underline uppercase tracking-wide">Log in here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Industrial styles injection for form
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="url"], input[type="password"]');
+        inputs.forEach(input => {
+            input.classList.add('w-full', 'px-3', 'py-2.5', 'bg-slate-50', 'border', 'border-slate-300', 'rounded-sm', 'text-sm', 'text-slate-900', 'focus:outline-none', 'focus:border-blue-600', 'focus:ring-1', 'focus:ring-blue-600', 'transition', 'placeholder-slate-400');
+        });
+    });
+</script>
+{% endblock %}

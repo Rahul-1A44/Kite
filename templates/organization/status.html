@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block navbar %}
+<nav class="absolute top-0 left-0 w-full p-6 z-50">
+    <div class="container mx-auto">
+        <a href="{% url 'home' %}" class="flex items-center gap-3 text-slate-900 hover:opacity-80 transition w-fit">
+            <div class="w-8 h-8 bg-blue-600 rounded-sm flex items-center justify-center text-white text-xs shadow-md">
+                <i class="fa-solid fa-building"></i>
+            </div>
+            <span class="font-bold text-lg tracking-tight uppercase">Kite <span
+                    class="text-slate-500 text-sm font-normal border-l border-slate-300 pl-2 ml-2">Organization</span></span>
+        </a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-3xl">
+
+        <!-- MAIN TERMINAL CARD -->
+        <div class="bg-white rounded-sm border border-slate-300 shadow-xl overflow-hidden relative">
+
+            <!-- DECORATIVE TOP BAR -->
+            <div class="h-2 bg-slate-900 w-full"></div>
+            <div class="bg-slate-100 border-b border-slate-200 px-6 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <i class="fa-solid fa-server"></i> System Status
+                </div>
+                <div class="text-xs font-mono text-slate-400">ID: {{org.id|stringformat:"04d"}}</div>
+            </div>
+
+            <div class="p-8 md:p-12 text-center">
+
+                <!-- 1. PENDING STATE -->
+                {% if org.status == 'PENDING' %}
+                <div class="inline-flex flex-col items-center mb-8">
+                    <div
+                        class="w-16 h-16 bg-amber-50 border-2 border-amber-200 rounded-sm flex items-center justify-center mb-4 text-amber-600 animate-pulse">
+                        <i class="fa-solid fa-hourglass-half text-2xl"></i>
+                    </div>
+                    <div
+                        class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-widest rounded-sm border border-amber-200">
+                        Verification Pending
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-bold text-slate-900 uppercase tracking-tight mb-2">Access Restricted</h2>
+                <p class="text-slate-500 mb-8 max-w-lg mx-auto leading-relaxed">
+                    The organization <span class="font-bold text-slate-900">{{org.name}}</span> is currently under
+                    manual review. administrative clearance is required to proceed.
+                </p>
+
+                <div
+                    class="bg-slate-50 border border-slate-200 rounded-sm p-6 text-left mb-8 max-w-lg mx-auto relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
+                    <h6 class="font-bold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-list-check text-slate-400"></i> Audit Sequence
+                    </h6>
+                    <ul class="text-sm text-slate-600 space-y-3 font-mono">
+                        <li class="flex items-center gap-3">
+                            <i class="fa-solid fa-check text-green-500"></i>
+                            <span>Registration Data Submitted</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <div
+                                class="w-4 h-4 rounded-full border-2 border-amber-400 border-t-transparent animate-spin">
+                            </div>
+                            <span>Verifying Reg No: <span
+                                    class="text-slate-900 font-bold">{{org.registration_number}}</span></span>
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-400">
+                            <i class="fa-regular fa-circle"></i>
+                            <span>Administrative Approval</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <a href="{% url 'home' %}"
+                    class="inline-flex items-center gap-2 px-6 py-3 border border-slate-300 text-slate-700 font-bold text-sm uppercase tracking-wide rounded-sm hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-arrow-left"></i> Return to Terminal
+                </a>
+
+
+                <!-- 2. VERIFIED (PAYMENT REQUIRED) STATE -->
+                {% elif org.status == 'VERIFIED' %}
+                <div class="inline-flex flex-col items-center mb-8">
+                    <div
+                        class="w-16 h-16 bg-blue-50 border-2 border-blue-200 rounded-sm flex items-center justify-center mb-4 text-blue-600">
+                        <i class="fa-solid fa-shield-check text-2xl"></i>
+                    </div>
+                    <div
+                        class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-widest rounded-sm border border-blue-200">
+                        Identity Verified
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-bold text-slate-900 uppercase tracking-tight mb-2">Validation Complete</h2>
+                <p class="text-slate-500 mb-8 font-medium">
+                    Access approved for <span class="font-bold text-slate-900">{{org.name}}</span>. Payment required to
+                    initialize audit tools.
+                </p>
+
+                <div
+                    class="bg-slate-50 border border-slate-200 rounded-sm p-0 max-w-sm mx-auto mb-8 overflow-hidden text-left">
+                    <div class="bg-slate-100 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase">Subscription Plan</span>
+                        <span
+                            class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">Enterprise</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-slate-600 text-sm">Dashboard Activation</span>
+                            <span class="text-2xl font-bold text-slate-900">Rs. 100</span>
+                        </div>
+                        <div class="text-xs text-slate-400 font-mono text-right">One-time initialization fee</div>
+                    </div>
+                </div>
+
+                <form action="{% url 'init_khalti' org.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="w-full max-w-sm mx-auto bg-[#5C2D91] hover:bg-[#4a2475] text-white font-bold py-3.5 px-6 rounded-sm shadow-sm transition-all flex items-center justify-center gap-3 text-sm uppercase tracking-wide group">
+                        <img src="https://web.khalti.com/static/img/logo1.png" height="20"
+                            class="bg-white rounded-sm px-1">
+                        <span>Process Transaction</span>
+                        <i class="fa-solid fa-chevron-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </button>
+                </form>
+
+                <p
+                    class="text-[10px] text-slate-400 mt-4 uppercase tracking-wider flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-lock"></i> Secured by Khalti Gateway
+                </p>
+
+
+                <!-- 3. ACTIVE STATE -->
+                {% elif org.status == 'ACTIVE' %}
+                <div class="inline-flex flex-col items-center mb-8">
+                    <div
+                        class="w-16 h-16 bg-green-50 border-2 border-green-200 rounded-sm flex items-center justify-center mb-4 text-green-600">
+                        <i class="fa-solid fa-power-off text-2xl"></i>
+                    </div>
+                    <div
+                        class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold uppercase tracking-widest rounded-sm border border-green-200">
+                        System Online
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-bold text-slate-900 uppercase tracking-tight mb-2">Workspace Initialized</h2>
+                <p class="text-slate-500 text-lg mb-8">
+                    Welcome to the Kite Organization Cloud. All systems operational.
+                </p>
+
+                <a href="#"
+                    class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-sm shadow-md transition-all flex items-center justify-center gap-2 w-full max-w-sm mx-auto uppercase tracking-wide text-sm">
+                    Launch Dashboard <i class="fa-solid fa-arrow-right-long ml-1"></i>
+                </a>
+
+                <!-- 4. SUSPENDED/OTHER STATE -->
+                {% else %}
+                <div class="inline-flex flex-col items-center mb-8">
+                    <div
+                        class="w-16 h-16 bg-red-50 border-2 border-red-200 rounded-sm flex items-center justify-center mb-4 text-red-600">
+                        <i class="fa-solid fa-ban text-2xl"></i>
+                    </div>
+                    <div
+                        class="px-3 py-1 bg-red-100 text-red-800 text-xs font-bold uppercase tracking-widest rounded-sm border border-red-200">
+                        Access Denied
+                    </div>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 uppercase tracking-tight mb-3">Account Suspended</h2>
+                <p class="text-slate-500 text-sm max-w-md mx-auto">
+                    Your organization account has been flagged for administrative review. Please contact support channel
+                    #4492 for assistance.
+                </p>
+                {% endif %}
+
+            </div>
+
+            <!-- DECORATIVE BOTTOM BAR -->
+            <div
+                class="bg-slate-50 border-t border-slate-200 px-6 py-2 flex justify-between items-center text-[10px] text-slate-400 uppercase tracking-widest">
+                <span>Kite Enterprise Systems</span>
+                <span>v2.4.0-stable</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

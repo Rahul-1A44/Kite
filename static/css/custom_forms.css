@@ -1,0 +1,60 @@
+/* --- PROFESSIONAL FORM STYLING --- */
+.professional-form p {
+    margin-bottom: 1.5rem;
+}
+
+.professional-form label {
+    display: block;
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 600;
+    color: #374151; /* text-gray-700 */
+    margin-bottom: 0.5rem;
+}
+
+/* Style all standard inputs */
+.professional-form input[type="text"],
+.professional-form input[type="email"],
+.professional-form input[type="url"],
+.professional-form input[type="number"],
+.professional-form input[type="date"],
+.professional-form select,
+.professional-form textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e1; /* slate-300 */
+    border-radius: 2px;
+    background-color: #ffffff;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Focus States */
+.professional-form input:focus,
+.professional-form select:focus,
+.professional-form textarea:focus {
+    outline: none;
+    border-color: #2563eb; /* border-blue-600 */
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); /* ring effect */
+}
+
+/* Specific Field Adjustments */
+.professional-form textarea {
+    min-height: 150px;
+    line-height: 1.6;
+}
+
+/* Help Text (Django's help_text) */
+.professional-form .helptext {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.35rem;
+}
+
+/* File Input Styling */
+.professional-form input[type="file"] {
+    padding: 0.5rem;
+    background-color: #f9fafb;
+    border: 1px dashed #d1d5db;
+}

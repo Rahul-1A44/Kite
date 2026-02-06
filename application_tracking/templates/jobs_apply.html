@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Career Opportunities - Kite Enterprise{% endblock %}
+
+{% block content %}
+
+<div class="bg-gray-50 min-h-screen">
+
+    <!-- HEADER -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Open Positions</h1>
+            <p class="text-slate-500 mt-2 text-sm">Browse and filter active opportunities across our network.</p>
+        </div>
+    </div>
+
+    <!-- CONTENT GRID -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- SIDEBAR FILTERS -->
+            <div class="lg:col-span-3">
+                <div class="bg-white border border-gray-200 p-6 rounded-sm shadow-sm sticky top-24">
+                    <h3
+                        class="font-bold text-slate-800 mb-6 uppercase text-xs tracking-wider border-b border-gray-100 pb-2">
+                        Filter Criteria</h3>
+
+                    <form action="{% url 'jobs_apply' %}" method="GET" class="space-y-6">
+
+                        <!-- Keyword -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Search Keywords</label>
+                            <div class="relative">
+                                <i
+                                    class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+                                <input type="text" name="keyword" value="{{ request.GET.keyword }}"
+                                    placeholder="e.g. Developer"
+                                    class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-sm text-sm focus:border-blue-500 focus:outline-none transition">
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Location</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-location-dot absolute left-3 top-3 text-slate-400 text-sm"></i>
+                                <input type="text" name="location" value="{{ request.GET.location }}"
+                                    placeholder="e.g. Remote"
+                                    class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-sm text-sm focus:border-blue-500 focus:outline-none transition">
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit"
+                            class="w-full bg-slate-900 text-white py-2.5 rounded-sm font-bold text-sm hover:bg-blue-600 transition uppercase tracking-wide">
+                            Apply Filters
+                        </button>
+
+                        {% if request.GET.keyword or request.GET.location %}
+                        <a href="{% url 'jobs_apply' %}"
+                            class="block text-center text-xs text-slate-500 hover:text-red-500 mt-4 font-medium">
+                            <i class="fa-solid fa-xmark mr-1"></i> Clear Filters
+                        </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- JOB LIST -->
+            <div class="lg:col-span-9 space-y-4">
+
+                <!-- Results Header -->
+                <div class="flex justify-between items-center pb-4 border-b border-gray-200 mb-2">
+                    <span class="text-slate-600 font-medium text-sm">Showing <strong
+                            class="text-slate-900">{{job_adverts.paginator.count}}</strong> results</span>
+                    <div class="flex gap-2 text-sm text-slate-500">
+                        <span>Sort by:</span>
+                        <select class="bg-transparent font-bold text-slate-800 focus:outline-none">
+                            <option>Newest</option>
+                            <option>Relevance</option>
+                        </select>
+                    </div>
+                </div>
+
+                {% for advert in job_adverts %}
+                <!-- Job Row Item -->
+                <div
+                    class="bg-white border border-gray-200 rounded-sm p-5 hover:border-blue-400 hover:shadow-md transition duration-200 group relative">
+                    <div class="flex flex-col md:flex-row gap-6 items-start">
+
+                        <!-- Logo -->
+                        <div
+                            class="w-12 h-12 bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg border border-slate-200 rounded-sm shrink-0">
+                            {% if advert.organization %}
+                            {{advert.organization.name|slice:":1"|upper}}
+                            {% else %}
+                            {{advert.company_name|slice:":1"|upper}}
+                            {% endif %}
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition">
+                                        {% if advert.organization %}
+                                        <a href="{% url 'job_detail' advert.id %}">{{advert.title}}</a>
+                                        {% else %}
+                                        <a href="{% url 'job_advert' advert.id %}">{{advert.title}}</a>
+                                        {% endif %}
+                                    </h3>
+                                    <p class="text-sm text-slate-500 font-medium mt-0.5">
+                                        {% if advert.organization %}
+                                        {{ advert.organization.name }}
+                                        {% else %}
+                                        {{ advert.company_name }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <span
+                                    class="bg-green-50 text-green-700 text-xs font-bold px-2 py-1 rounded-sm border border-green-100 uppercase">
+                                    {{ advert.employment_type|default:advert.job_type|default:"Full Time" }}
+                                </span>
+                            </div>
+
+                            <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
+                                <span class="flex items-center gap-2"><i
+                                        class="fa-solid fa-location-dot text-slate-400"></i>
+                                    {{ advert.location|default:"Remote" }}</span>
+                                <span class="flex items-center gap-2"><i class="fa-regular fa-clock text-slate-400"></i>
+                                    {% if advert.posted_at %}
+                                    {{ advert.posted_at|naturalday }}
+                                    {% else %}
+                                    {{ advert.created_at|naturalday }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col gap-2 w-full md:w-auto shrink-0 mt-4 md:mt-0">
+                            {% if advert.organization %}
+                            <a href="{% url 'job_detail' advert.id %}"
+                                class="px-6 py-2 bg-blue-600 text-white text-sm font-bold text-center rounded-sm hover:bg-blue-700 transition">Apply
+                                Now</a>
+                            {% else %}
+                            <a href="{% url 'job_advert' advert.id %}"
+                                class="px-6 py-2 bg-blue-600 text-white text-sm font-bold text-center rounded-sm hover:bg-blue-700 transition">Apply
+                                Now</a>
+                            {% endif %}
+
+                            <button data-url="{% url 'analyze_resume' advert.id %}"
+                                data-apply-url="{% if advert.organization %}{% url 'job_detail' advert.id %}{% else %}{% url 'job_advert' advert.id %}{% endif %}"
+                                data-job-title="{{advert.title}}" onclick="openAnalysisModal(this)"
+                                class="px-6 py-2 bg-white border border-slate-300 text-slate-600 text-sm font-bold text-center rounded-sm hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i> Fits?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="bg-white border border-gray-200 p-12 text-center rounded-sm">
+                    <div
+                        class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 text-2xl mb-4">
+                        <i class="fa-solid fa-filter"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900">No jobs found</h3>
+                    <p class="text-slate-500">Try adjusting your filters to see more results.</p>
+                </div>
+                {% endfor %}
+
+                <!-- PAGINATION -->
+                {% if job_adverts.has_other_pages %}
+                <div class="flex justify-center mt-12">
+                    <div class="inline-flex border border-gray-200 bg-white rounded-sm divide-x divide-gray-200">
+                        {% if job_adverts.has_previous %}
+                        <a href="?page={{job_adverts.previous_page_number}}{% if request.GET.keyword %}&keyword={{request.GET.keyword}}{% endif %}{% if request.GET.location %}&location={{request.GET.location}}{% endif %}"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Previous</a>
+                        {% endif %}
+                        <span class="px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50">{{job_adverts.number}}</span>
+                        {% if job_adverts.has_next %}
+                        <a href="?page={{job_adverts.next_page_number}}{% if request.GET.keyword %}&keyword={{request.GET.keyword}}{% endif %}{% if request.GET.location %}&location={{request.GET.location}}{% endif %}"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Next</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI ANALYSIS MODAL -->
+<div id="analysisModal" class="fixed inset-0 z-[60] hidden" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+
+            <div
+                class="relative transform overflow-hidden rounded-sm bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+
+                <!-- HEADER -->
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-base font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-blue-500"></i> AI Fit Analysis
+                    </h3>
+                    <button onclick="closeAnalysisModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- BODY -->
+                <div class="px-6 py-6">
+                    <div id="analysisStep1">
+                        <div class="text-center mb-6">
+                            <h2 class="text-xl font-bold text-slate-900">Upload Resume</h2>
+                            <p class="text-slate-500 text-sm mt-1">Our engine will analyze your compatibility.</p>
+                        </div>
+
+                        <form id="analysisForm" enctype="multipart/form-data" class="space-y-4">
+                            <input type="hidden" id="currentAnalysisUrl">
+
+                            <div
+                                class="relative border-2 border-dashed border-slate-200 bg-slate-50 rounded-sm p-8 text-center hover:border-blue-400 hover:bg-blue-50/10 transition-colors group cursor-pointer">
+                                <input type="file" name="resume" accept=".pdf,.docx"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" required
+                                    onchange="showFileName(this)">
+
+                                <i
+                                    class="fa-solid fa-cloud-arrow-up text-3xl text-slate-300 group-hover:text-blue-500 transition mb-3"></i>
+                                <p class="text-slate-900 font-bold text-sm">Drag file or click to browse</p>
+                                <p class="text-slate-400 text-xs mt-1">PDF or DOCX (Max 5MB)</p>
+
+                                <p id="fileNameDisplay"
+                                    class="mt-3 text-xs font-bold text-blue-600 hidden bg-blue-50 py-1 px-2 rounded-sm inline-block">
+                                </p>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-blue-600 text-white py-3 rounded-sm font-bold text-sm hover:bg-blue-700 transition flex justify-center items-center gap-2">
+                                <span id="btnText">Start Analysis</span>
+                                <i id="btnSpinner" class="fa-solid fa-circle-notch fa-spin hidden"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- RESULTS -->
+                    <div id="analysisStep2" class="hidden">
+                        <div class="text-center mb-6">
+                            <div id="resultIcon" class="mb-4 flex justify-center"></div>
+                            <h4 id="resultTitle" class="text-xl font-bold text-slate-900"></h4>
+                            <p id="resultMessage" class="text-slate-500 text-sm mt-1"></p>
+                        </div>
+
+                        <div id="missingSkillsContainer"
+                            class="hidden bg-red-50 border border-red-100 p-4 rounded-sm text-left mb-6">
+                            <p class="text-xs font-bold text-red-800 uppercase mb-2">Skill Gaps Identified</p>
+                            <div id="missingSkillsList" class="flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <div class="grid gap-3">
+                            <a id="modalApplyBtn" href="#"
+                                class="hidden w-full text-center bg-green-600 text-white py-3 rounded-sm font-bold text-sm hover:bg-green-700 transition">
+                                Proceed to Apply <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </a>
+
+                            <a id="modalSourceBtn" href="#"
+                                class="hidden w-full text-center bg-slate-800 text-white py-3 rounded-sm font-bold text-sm hover:bg-slate-900 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-book-open text-xs"></i> View Learning Resources
+                            </a>
+
+                            <button onclick="resetModal()"
+                                class="text-xs text-slate-400 hover:text-slate-600 font-bold uppercase mt-2">
+                                Analyize Different Resume
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAnalysisModal(btn) {
+        const url = btn.getAttribute('data-url');
+        const applyUrl = btn.getAttribute('data-apply-url');
+        const jobTitle = btn.getAttribute('data-job-title');
+
+        document.getElementById('currentAnalysisUrl').value = url;
+        document.getElementById('modalApplyBtn').href = applyUrl;
+        document.getElementById('analysisForm').setAttribute('data-current-job', jobTitle);
+        document.getElementById('analysisModal').classList.remove('hidden');
+        resetModal();
+    }
+
+    function closeAnalysisModal() {
+        document.getElementById('analysisModal').classList.add('hidden');
+    }
+
+    function showFileName(input) {
+        const display = document.getElementById('fileNameDisplay');
+        if (input.files && input.files[0]) {
+            display.textContent = input.files[0].name;
+            display.classList.remove('hidden');
+        }
+    }
+
+    function resetModal() {
+        document.getElementById('analysisStep1').classList.remove('hidden');
+        document.getElementById('analysisStep2').classList.add('hidden');
+        document.getElementById('fileNameDisplay').classList.add('hidden');
+        document.getElementById('analysisForm').reset();
+
+        document.getElementById('modalApplyBtn').classList.add('hidden');
+        document.getElementById('modalSourceBtn').classList.add('hidden');
+    }
+
+    document.getElementById('analysisForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const url = document.getElementById('currentAnalysisUrl').value;
+        const jobTitle = this.getAttribute('data-current-job');
+        const formData = new FormData(this);
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const baseSourceUrl = "{% url 'sources_page' %}";
+
+        btnText.textContent = "Processing...";
+        btnSpinner.classList.remove('hidden');
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                btnText.textContent = "Start Analysis";
+                btnSpinner.classList.add('hidden');
+                document.getElementById('analysisStep1').classList.add('hidden');
+                document.getElementById('analysisStep2').classList.remove('hidden');
+
+                const icon = document.getElementById('resultIcon');
+                const title = document.getElementById('resultTitle');
+                const msg = document.getElementById('resultMessage');
+                const missingBox = document.getElementById('missingSkillsContainer');
+                const btnApply = document.getElementById('modalApplyBtn');
+                const btnSource = document.getElementById('modalSourceBtn');
+
+                if (data.status === 'success') {
+                    icon.innerHTML = '<div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl"><i class="fa-solid fa-check"></i></div>';
+                    title.textContent = "High Match Score";
+                    msg.textContent = data.message;
+                    missingBox.classList.add('hidden');
+                    if (data.redirect_url) btnApply.href = data.redirect_url;
+                    btnApply.classList.remove('hidden');
+                    btnSource.classList.add('hidden');
+                } else {
+                    icon.innerHTML = '<div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl"><i class="fa-solid fa-triangle-exclamation"></i></div>';
+                    title.textContent = "Skills Gap Detected";
+                    msg.textContent = data.message;
+
+                    let searchTopic = jobTitle;
+                    if (data.missing_skills && data.missing_skills.length > 0) {
+                        missingBox.classList.remove('hidden');
+                        const list = document.getElementById('missingSkillsList');
+                        list.innerHTML = '';
+                        data.missing_skills.forEach(skill => {
+                            list.innerHTML += `<span class="bg-white border border-red-200 text-red-700 px-2 py-1 rounded-sm text-xs font-bold">${skill}</span>`;
+                        });
+                        searchTopic = data.missing_skills[0];
+                    } else {
+                        missingBox.classList.add('hidden');
+                    }
+
+                    btnSource.href = `${baseSourceUrl}?topic=${encodeURIComponent(searchTopic)}`;
+                    btnSource.classList.remove('hidden');
+                    btnApply.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Analysis Error.");
+                btnText.textContent = "Start Analysis";
+                btnSpinner.classList.add('hidden');
+            });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'org_base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-6">
+    
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p class="text-gray-500">Welcome back, {{ org.name }} Team.</p>
+        </div>
+        
+        <a href="{% url 'org_post_job' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-medium shadow-lg shadow-blue-500/30 flex items-center gap-2 transition transform hover:-translate-y-0.5">
+            <i class="fa-solid fa-briefcase"></i> Post New Job
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1">Active Jobs</p>
+                <h3 class="text-2xl font-bold text-gray-900">{{ org.jobs.count }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                <i class="fa-solid fa-briefcase text-xl"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1">Total Applicants</p>
+                <h3 class="text-2xl font-bold text-gray-900">0</h3>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600">
+                <i class="fa-solid fa-users text-xl"></i>
+            </div>
+        </div>
+
+        <a href="{% url 'org_inbox' %}" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between hover:border-blue-300 transition group cursor-pointer">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1 group-hover:text-blue-600 transition">Messages</p>
+                <h3 class="text-2xl font-bold text-gray-900">Inbox</h3>
+            </div>
+            <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center text-green-600 group-hover:bg-green-100 transition">
+                <i class="fa-solid fa-envelope text-xl"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-gray-900">Your Posted Jobs</h3>
+        </div>
+        
+        <div class="divide-y divide-gray-100">
+            {% for job in org.jobs.all %}
+                <div class="p-6 hover:bg-gray-50 transition flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-gray-900 text-lg">{{ job.title }}</h4>
+                        <p class="text-sm text-gray-500 flex gap-4 mt-1">
+                            <span><i class="fa-solid fa-location-dot mr-1"></i> {{ job.location }}</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> Posted {{ job.posted_at|timesince }} ago</span>
+                            <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">{{ job.get_job_type_display }}</span>
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold border border-green-100">Active</span>
+                        <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis-vertical px-2"></i></button>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="p-12 text-center text-gray-400">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-folder-open text-2xl opacity-50"></i>
+                    </div>
+                    <p class="font-medium">No jobs posted yet.</p>
+                    <p class="text-sm mt-1">Create your first job post to start hiring.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

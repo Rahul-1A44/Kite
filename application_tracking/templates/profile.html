@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{request.user.first_name}}'s Portfolio | Kite Enterprise{% endblock %}
+
+{% block content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- NOTIFICATIONS -->
+<div id="toast-container" class="fixed top-24 right-6 z-[100] flex flex-col gap-3">
+    {% if messages %}
+    {% for message in messages %}
+    <div
+        class="toast-notification bg-white border-l-4 border-green-500 text-slate-800 px-6 py-4 rounded-sm shadow-xl flex items-center gap-4 min-w-[300px]">
+        <div class="bg-green-50 text-green-600 rounded-sm p-1.5">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500">System Notification</h4>
+            <p class="text-sm text-slate-900 font-medium">{{message}}</p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="ml-auto text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<div class="bg-gray-50 min-h-screen">
+
+    <!-- HERO BANNER -->
+    <div class="relative bg-slate-900 h-48 overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5" />
+                    </pattern>
+                </defs>
+                <rect width="100" height="100" fill="url(#grid)" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="max-w-7xl mx-auto px-6 -mt-16 pb-20">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- LEFT COLUMN: BIO & SKILLS -->
+            <div class="lg:col-span-4 space-y-6">
+
+                <!-- PROFILE CARD -->
+                <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden text-center relative">
+                    <div class="pt-10 pb-6 px-6">
+                        <!-- Avatar -->
+                        <div class="relative inline-block mx-auto mb-4 group cursor-pointer"
+                            onclick="openModal('editProfileModal')">
+                            <div class="w-32 h-32 bg-white rounded-sm p-1 border border-slate-200 shadow-sm">
+                                <img id="profileImageDisplay"
+                                    src="{% if profile.profile_picture %}{{profile.profile_picture.url}}{% else %}https://ui-avatars.com/api/?name={{request.user.first_name}}+{{request.user.last_name}}&background=0f172a&color=fff&size=256{% endif %}"
+                                    class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-500">
+                            </div>
+                            <div
+                                class="absolute bottom-0 right-0 bg-blue-600 text-white w-8 h-8 flex items-center justify-center text-xs rounded-sm shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                        </div>
+
+                        <h1 class="text-xl font-bold text-slate-900 uppercase tracking-tight">
+                            {{request.user.first_name}} {{request.user.last_name}}</h1>
+                        <p class="text-slate-500 text-sm mt-1 font-medium">{{profile.headline|default:"N/A"}}</p>
+
+                        <!-- Contact Matrix -->
+                        <div class="mt-6 border-t border-slate-100 pt-4 text-left space-y-3">
+                            <div class="flex items-center gap-3 text-sm text-slate-600">
+                                <div
+                                    class="w-8 h-8 bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                    <i class="fa-solid fa-location-dot"></i></div>
+                                <span>{{profile.location|default:"-"}}</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-slate-600">
+                                <div
+                                    class="w-8 h-8 bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                    <i class="fa-solid fa-envelope"></i></div>
+                                <span class="truncate">{{request.user.email}}</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-slate-600">
+                                <div
+                                    class="w-8 h-8 bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                    <i class="fa-solid fa-phone"></i></div>
+                                <span>{{profile.phone|default:"-"}}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            {% if request.user == user %}
+                            <button onclick="openModal('editProfileModal')"
+                                class="w-full bg-slate-900 text-white py-2 rounded-sm text-sm font-bold uppercase tracking-wide hover:bg-slate-800 transition">
+                                Edit Profile
+                            </button>
+                            {% elif request.user.organization_owned %}
+                            <a href="{% url 'org_chat' user.id %}"
+                                class="block w-full bg-blue-600 text-white py-2 rounded-sm text-sm font-bold uppercase tracking-wide hover:bg-blue-700 transition">
+                                Contact Candidate
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        {% if profile.portfolio_url %}
+                        <a href="{{profile.portfolio_url}}" target="_blank"
+                            class="block mt-3 text-xs font-bold text-blue-600 hover:underline uppercase tracking-wide">
+                            View External Portfolio <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- COMPETENCY MATRIX (SKILLS) -->
+                <div class="bg-white rounded-sm border border-slate-200 shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Competency Matrix</h3>
+                        <button onclick="openModal('addSkillModal')"
+                            class="text-slate-400 hover:text-blue-600 transition"><i
+                                class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        {% for skill in skills %}
+                        <span
+                            class="px-3 py-1 bg-slate-50 text-slate-700 rounded-sm text-xs font-bold border border-slate-200 uppercase tracking-wide">{{skill.name}}</span>
+                        {% empty %}
+                        <p class="text-slate-400 text-xs italic">No skills recorded.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- BIO SUMMARY -->
+                <div class="bg-white rounded-sm border border-slate-200 shadow-sm p-6">
+                    <h3
+                        class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 border-b border-slate-100 pb-2">
+                        Professional Summary</h3>
+                    <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-line font-light">
+                        {{profile.bio|default:"No summary provided."}}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: TIMELINE -->
+            <div class="lg:col-span-8 space-y-8">
+
+                <!-- EXPERIENCE -->
+                <div class="bg-white rounded-sm border border-slate-200 shadow-sm p-8">
+                    <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-2">
+                        <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-briefcase text-blue-600"></i> Career History
+                        </h3>
+                        <button onclick="openModal('addExpModal')"
+                            class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold uppercase px-3 py-1.5 rounded-sm hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Role
+                        </button>
+                    </div>
+
+                    <div class="relative border-l-2 border-slate-100 ml-3 space-y-10 pl-8 pb-2">
+                        {% for exp in experiences %}
+                        <div class="relative group">
+                            <!-- Timeline Dot -->
+                            <div
+                                class="absolute -left-[39px] top-1.5 w-4 h-4 bg-white border-2 border-slate-300 rounded-full group-hover:border-blue-500 transition">
+                            </div>
+
+                            <h4 class="text-base font-bold text-slate-900 uppercase leading-none">{{exp.job_title}}</h4>
+                            <div class="text-sm font-bold text-blue-600 mt-1">{{exp.company_name}}</div>
+                            <div class="text-xs font-mono text-slate-400 mt-1 uppercase tracking-wide">
+                                {{exp.start_date|date:"M Y"}} – {% if exp.is_current %}<span
+                                    class="text-green-600 font-bold">Present</span>{% else %}{{exp.end_date|date:"M
+                                Y"}}{% endif %}
+                            </div>
+                            <p class="text-sm text-slate-600 mt-3 leading-relaxed border-l-2 border-slate-50 pl-3">
+                                {{exp.description}}
+                            </p>
+                        </div>
+                        {% empty %}
+                        <div class="text-slate-400 text-sm italic pl-2">No experience record found.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- EDUCATION -->
+                <div class="bg-white rounded-sm border border-slate-200 shadow-sm p-8">
+                    <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-2">
+                        <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-slate-500"></i> Education
+                        </h3>
+                        <button onclick="openModal('addEduModal')"
+                            class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold uppercase px-3 py-1.5 rounded-sm hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Entry
+                        </button>
+                    </div>
+
+                    <div class="relative border-l-2 border-slate-100 ml-3 space-y-8 pl-8 pb-2">
+                        {% for edu in education %}
+                        <div class="relative group">
+                            <!-- Timeline Dot -->
+                            <div
+                                class="absolute -left-[39px] top-1.5 w-4 h-4 bg-white border-2 border-slate-300 rounded-full group-hover:border-slate-500 transition">
+                            </div>
+
+                            <h4 class="text-base font-bold text-slate-900 uppercase leading-none">{{edu.institution}}
+                            </h4>
+                            <div class="text-sm font-medium text-slate-600 mt-1">{{edu.degree}}</div>
+                            <div class="text-xs font-mono text-slate-400 mt-1 uppercase tracking-wide">
+                                {{edu.start_date|date:"Y"}} – {{edu.end_date|date:"Y"}}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-slate-400 text-sm italic pl-2">No education record found.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- EDIT PROFILE MODAL -->
+<div id="editProfileModal"
+    class="modal fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
+    <div class="bg-white w-full max-w-lg rounded-sm shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Update Profile</h3>
+            <button onclick="closeModal('editProfileModal')" class="text-slate-400 hover:text-slate-600"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
+            {% csrf_token %}
+            <input type="hidden" name="edit_profile" value="1">
+
+            <div class="flex items-center gap-6 mb-2">
+                <div class="w-20 h-20 rounded-sm border border-slate-200 overflow-hidden shrink-0">
+                    <img id="modalProfilePreview"
+                        src="{% if profile.profile_picture %}{{profile.profile_picture.url}}{% else %}https://ui-avatars.com/api/?name={{request.user.first_name}}+{{request.user.last_name}}{% endif %}"
+                        class="w-full h-full object-cover">
+                </div>
+                <div class="space-y-2">
+                    <label for="id_profile_picture"
+                        class="cursor-pointer bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wide inline-flex items-center gap-2 transition">
+                        <i class="fa-solid fa-upload"></i> Upload Photo
+                    </label>
+                    <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" class="hidden"
+                        onchange="previewImage(this)">
+
+                    <button type="button" onclick="openCameraModal()"
+                        class="cursor-pointer bg-slate-800 text-white hover:bg-slate-900 px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wide inline-flex items-center gap-2 transition">
+                        <i class="fa-solid fa-camera"></i> Camera
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Professional Headline</label>
+                    <div class="pro-form-wrapper">{{profile_form.headline}}</div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Summary / Bio</label>
+                    <div class="pro-form-wrapper">{{profile_form.bio}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Location</label>
+                        <div class="pro-form-wrapper">{{profile_form.location}}</div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Phone</label>
+                        <div class="pro-form-wrapper">{{profile_form.phone}}</div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Portfolio URL</label>
+                    <div class="pro-form-wrapper">{{profile_form.portfolio_url}}</div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100">
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-sm uppercase tracking-wide text-sm transition">Save
+                    Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- WEBCAM MODAL -->
+<div id="webcamModal" class="modal fixed inset-0 z-[60] flex items-center justify-center bg-black/90 hidden">
+    <div class="bg-black w-full max-w-md border border-slate-700 rounded-sm relative">
+        <div class="p-3 bg-slate-900 border-b border-slate-800 flex justify-between items-center text-white">
+            <h3 class="text-xs font-bold uppercase tracking-widest">Camera Input</h3>
+            <button onclick="closeCameraModal()" class="text-slate-400 hover:text-white"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="relative h-64 bg-black flex items-center justify-center">
+            <video id="cameraFeed" autoplay playsinline class="w-full h-full object-cover"></video>
+            <canvas id="cameraCanvas" class="hidden"></canvas>
+        </div>
+        <div class="p-4 bg-slate-900 flex justify-center border-t border-slate-800">
+            <button onclick="takeSnapshot()"
+                class="w-12 h-12 bg-white rounded-full border-4 border-slate-500 hover:border-blue-500 transition flex items-center justify-center">
+                <div class="w-8 h-8 bg-slate-200 rounded-full"></div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ADD EXPERIENCE MODAL -->
+<div id="addExpModal"
+    class="modal fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
+    <div class="bg-white w-full max-w-lg rounded-sm shadow-2xl p-0">
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Add Experience Record</h3>
+            <button onclick="closeModal('addExpModal')" class="text-slate-400 hover:text-slate-600"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form method="POST" class="p-6 space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="add_experience" value="1">
+
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Job
+                        Title</label>{{exp_form.job_title}}</div>
+                <div><label
+                        class="block text-xs font-bold text-slate-500 uppercase mb-1">Company</label>{{exp_form.company_name}}
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Start
+                        Date</label>{{exp_form.start_date}}</div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">End
+                        Date</label>{{exp_form.end_date}}</div>
+            </div>
+            <div class="flex items-center gap-2">
+                {{exp_form.is_current}} <label class="text-xs font-bold text-slate-700 uppercase">I currently work
+                    here</label>
+            </div>
+            <div><label
+                    class="block text-xs font-bold text-slate-500 uppercase mb-1">Description</label>{{exp_form.description}}
+            </div>
+
+            <div class="pt-4"><button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-sm uppercase tracking-wide text-sm transition">Save
+                    Record</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- ADD EDUCATION MODAL -->
+<div id="addEduModal"
+    class="modal fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
+    <div class="bg-white w-full max-w-lg rounded-sm shadow-2xl p-0">
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Add Education Record</h3>
+            <button onclick="closeModal('addEduModal')" class="text-slate-400 hover:text-slate-600"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form method="POST" class="p-6 space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="add_education" value="1">
+
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Degree /
+                    Certification</label>{{edu_form.degree}}</div>
+            <div><label
+                    class="block text-xs font-bold text-slate-500 uppercase mb-1">Institution</label>{{edu_form.institution}}
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Start
+                        Date</label>{{edu_form.start_date}}</div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">End
+                        Date</label>{{edu_form.end_date}}</div>
+            </div>
+
+            <div class="pt-4"><button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-sm uppercase tracking-wide text-sm transition">Save
+                    Record</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- ADD SKILL MODAL -->
+<div id="addSkillModal"
+    class="modal fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
+    <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl p-0">
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Add Competency</h3>
+            <button onclick="closeModal('addSkillModal')" class="text-slate-400 hover:text-slate-600"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form method="POST" class="p-6">
+            {% csrf_token %}
+            <input type="hidden" name="add_skill" value="1">
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Skill Name</label>
+                {{skill_form.name}}
+            </div>
+            <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-sm uppercase tracking-wide text-sm transition">Add
+                Competency</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. Auto-Hide Toast Notifications
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tailwind/CSS override for Django forms to match "Industrial"
+        const inputs = document.querySelectorAll('input[type="text"], input[type="url"], textarea, select');
+        inputs.forEach(input => {
+            input.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-slate-300', 'rounded-sm', 'text-sm', 'text-slate-800', 'focus:outline-none', 'focus:border-blue-500', 'transition');
+        });
+
+        // Notifications
+        const notifications = document.querySelectorAll('.toast-notification');
+        if (notifications.length > 0) {
+            setTimeout(() => {
+                notifications.forEach(toast => toast.remove());
+            }, 4000);
+        }
+    });
+
+    // 2. Modal Logic
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    // 3. Image Preview
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('modalProfilePreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 4. Webcam Logic
+    let videoStream = null;
+    async function openCameraModal() {
+        const modal = document.getElementById('webcamModal');
+        const video = document.getElementById('cameraFeed');
+        modal.classList.remove('hidden');
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = videoStream;
+        } catch (err) {
+            alert("Camera access denied.");
+            closeCameraModal();
+        }
+    }
+
+    function closeCameraModal() {
+        document.getElementById('webcamModal').classList.add('hidden');
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
+        }
+    }
+
+    function takeSnapshot() {
+        const video = document.getElementById('cameraFeed');
+        const canvas = document.getElementById('cameraCanvas');
+        const fileInput = document.getElementById('id_profile_picture');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        canvas.toBlob((blob) => {
+            const file = new File([blob], "webcam-photo.jpg", { type: "image/jpeg" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            previewImage(fileInput);
+            closeCameraModal();
+        }, 'image/jpeg');
+    }
+
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal') && event.target.id !== 'webcamModal') {
+            closeModal(event.target.id);
+        }
+    }
+</script>
+{% endblock %}
